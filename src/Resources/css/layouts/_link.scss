@@ -1,0 +1,43 @@
+.links {
+    @extend .row;
+
+    .link {
+        @extend .column;
+        text-align: center;
+        width: percentage(1/6);
+        margin-top: $gutter/2;
+        margin-bottom: $gutter/2;
+
+        [class^="icon-"], [class*=" icon-"]  {
+            background-color: $white;
+            border-radius: 50%;
+            padding: 10px;
+            color: $black;
+            display: inline-block;
+            font-size: 24px;
+            line-height: 24px;
+            width: 24px;
+            margin: 0 auto;
+            display: block;
+            margin-bottom: $gutter/4;
+            transition: margin $transition-speed;
+
+            &:before {
+                margin: 0;
+            }
+
+            &.orange { background-color: $orange; }
+            &.blue { background-color: $blue; }
+            &.green { background-color: $green; }
+            &.red { background-color: $red; }
+            &.purple { background-color: $purple; }
+            &.yellow { background-color: $yellow; }
+        }
+
+        &:hover {
+            [class^="icon-"], [class*=" icon-"] {
+                margin-top: -$gutter/4;
+            }
+        }
+    }
+}

@@ -1,0 +1,53 @@
+/* Layout */
+.site-title {
+    text-align: center;
+    margin-top: ($gutter * 1.5);
+    margin-bottom: ($gutter * 1.5);
+    font-size: $font-size-h1;
+    line-height: 1.2em;
+
+    a, a:visited, a:active{
+        color: $black;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #000000;
+    }
+
+    .sub-title
+    {
+        font-size: 60%;
+        line-height: 1em;
+        font-weight: 200;
+        letter-spacing: 3px;
+        padding-left: 4px;
+        display: block;
+    }
+}
+
+/* Footer */
+.site-footer {
+    background-color: $black;
+    margin: $gutter 0 0;
+    padding: $gutter/2 0;
+
+    hr[class^="icon-"]:before,
+    hr[class*=" icon-"]:before  {
+        background-color: $black;
+    }
+
+    h1, h2, h3, h4, h5, p, a, a:visited, a:active, a:hover {
+        color: $grey-light;
+    }
+
+    .copyright {
+        text-align: right;
+        margin-top: $gutter/2;
+
+        p {
+            color: $grey;
+            margin: 0;
+        }
+    }
+}

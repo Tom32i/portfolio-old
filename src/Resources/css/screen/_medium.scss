@@ -1,0 +1,16 @@
+/* 992px > 1200px */
+.container {
+    max-width: $screen-medium;
+}
+
+.languages .language .title {
+    width: 80%;
+}
+
+.badges .badge svg {
+    width: 60%;
+}
+
+.tool svg {
+    max-height: 50px;
+}

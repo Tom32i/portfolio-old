@@ -1,0 +1,12 @@
+/* 768px > 992px */
+.container {
+    max-width: $screen-small;
+}
+
+.badges .badge svg {
+    width: 70%;
+}
+
+.tools .tool svg {
+    max-height: 50px;
+}

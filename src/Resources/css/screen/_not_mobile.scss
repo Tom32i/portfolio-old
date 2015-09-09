@@ -1,0 +1,37 @@
+.projects {
+    max-width: 952px;
+    margin: 0 auto;
+
+    .project {
+        @include clearfix;
+        margin-top: $gutter;
+        margin-bottom: $gutter;
+
+        .picture {
+            float: left;
+            width: percentage(1/4);
+        }
+
+        .content {
+            margin-left: percentage(1/4);
+            padding-left: $gutter/2;
+        }
+
+        .head {
+            .title {
+                float: left;
+                margin-top: 0;
+            }
+
+            .side {
+                & > * {
+                    margin: 0 $gutter/4;
+
+                    &:last-child {
+                        margin-right: 0;
+                    }
+                }
+            }
+        }
+    }
+}

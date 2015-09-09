@@ -1,0 +1,23 @@
+{% extends 'layout.html.twig' %}
+
+{% block body_class 'blog' %}
+
+{% block content %}
+    {% for article in articles %}
+        {#{ template "_internal/pagination.html" . }#}
+
+        {#{ range .Paginator.Pages }#}
+            {#{ .Render "preview" }#}
+        {#{ end }#}
+
+        {#{ template "_internal/pagination.html" . }#}
+    {% endfor %}
+{% endblock %}
+
+{% block footer %}
+    <h1>THANK YOU FOR READING!</h1>
+
+    <div class="row">
+        {#{ partial "author.html" }#}
+    </div>
+{% endblock %}

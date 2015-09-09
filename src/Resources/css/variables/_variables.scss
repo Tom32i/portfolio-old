@@ -1,0 +1,37 @@
+/* COLORS */
+
+/* Screen sizes */
+$screen-small: 768px;
+$screen-medium: 992px;
+$screen-large: 1200px;
+
+$gutter: 40px;
+
+// Colors
+$white:         #ffffff;
+$black:         #2d3335;
+$grey:          #414a4c;
+$grey-light:    #9bb0b5;
+$grey-lighter:  #ebf1f2;
+//$gray-dark:     #151819;
+$blue:          #63b5ad;
+$green:         #a1b440;
+$red:           #d3192e;
+$yellow:        #e29f37;
+$orange:        #d56300;
+$purple:        #992652;
+
+/* Font weight */
+$font-light:    200;
+$font-normal:   400;
+$font-bold:     700;
+
+/* Font size */
+$font-size-h1: 2.3em;
+$font-size-h2: 2em;
+
+/* HR */
+$hr-icon-height: $gutter/2;
+
+/* Transition */
+$transition-speed: 200ms;

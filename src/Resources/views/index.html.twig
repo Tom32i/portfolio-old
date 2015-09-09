@@ -1,0 +1,28 @@
+{% extends 'layout.html.twig' %}
+
+{% block content %}
+    <hr class="icon-anchor">
+
+    <h1>I WRITE CODE</h1>
+    {#{ template "language/list.html" . }#}
+
+    <hr class="icon-movie">
+
+    <h1>HOW I WORK</h1>
+    {#{ template "method/list.html" . }#}
+
+    <hr class="icon-tea">
+
+    <h1>5 YEARS OF LOVE</h1>
+    {#{ template "project/list.html" . }#}
+
+    <hr class="icon-bike">
+
+    <h1>ACHIEVEMENTS</h1>
+    {#{ template "badge/list.html" . }#}
+
+    <hr class="icon-mustache">
+
+    <h1>MY BEST FRIENDS</h1>
+    {#{ template "tool/list.html" . }#}
+{% endblock %}

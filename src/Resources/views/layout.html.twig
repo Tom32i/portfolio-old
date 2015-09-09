@@ -1,0 +1,29 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    {% block header %}
+        <header class="site-title container">
+            <a href="/">
+                THOMAS <strong>JARRAND</strong>
+                <span class="sub-title">FRENCH WEB DEVELOPER</span>
+            </a>
+        </header>
+    {% endblock %}
+
+    <main role="main" class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <hr class="icon-invader">
+
+            {% block footer %}{% endblock %}
+
+            <div class="copyright">
+                <p>Designed and built by Thomas Jarrand.</p>
+                <p>All rights reserved. 2015</p>
+            </div>
+        </div>
+    </footer>
+{% endblock %}

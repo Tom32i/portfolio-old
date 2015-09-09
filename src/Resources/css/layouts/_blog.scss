@@ -1,0 +1,64 @@
+.blog {
+
+    .site-title {
+        margin-top: $gutter;
+        margin-bottom: $gutter;
+        font-size: 1.8em;
+        line-height: 1em;
+
+        .sub-title
+        {
+            font-size: 63%;
+            line-height: 1em;
+            letter-spacing: 2px;
+            padding-left: 3px;
+        }
+    }
+
+    .site-footer {
+        h1, h2, h3, h4, h5 {
+            font-weight: $font-light;
+            line-height: 1em;
+        }
+
+        h1 { font-size: 1.8em; }
+        h2 { font-size: 1.4em; }
+
+        .about {
+            @extend .column;
+            width: percentage(1/3);
+
+            .link {
+                font-size: 1.2em;
+
+                .name {
+                    height: 20px;
+                    line-height: 20px;
+                    padding: 20px 0;
+                    display: block;
+                }
+
+                .avatar {
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    float: left;
+                    margin-right: $gutter/4;
+                }
+            }
+        }
+
+        .articles {
+            @extend .column;
+            width: percentage(2/3);
+        }
+    }
+
+    .container {
+        max-width: 740px;
+    }
+
+    hr {
+        margin: $gutter 0;
+    }
+}

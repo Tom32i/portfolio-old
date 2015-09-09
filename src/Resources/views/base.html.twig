@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-GB">
+    <head>
+        {% block meta %}
+            <meta charset="utf-8">
+            <meta http-equiv="x-ua-compatible" content="ie=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+
+            <title>{% block title (title is defined ? title ~ '|' : '') ~ app.title|default('Thomas Jarrand') %}</title>
+
+            <meta name="author" content="{{ app.author|default('Thomas Jarrand') }}">
+            <meta name="description" content="{{ app.description|default('Thomas Jarrand') }}">
+            <meta name="keywords" content="{{ app.keyswords|default([])|join(' ') }}">
+
+            <meta property="og:title" content="{{ title|default('') }}">
+            <meta property="og:description" name="description" content="{{ app.description|default('Thomas Jarrand') }}">
+            <meta property="og:url" content="{{ app.request.uri }}">
+            <meta property="og:site_name" content="{{  app.title|default('Thomas Jarrand') }}">
+
+            <meta name="twitter:site" content="{{ app.twitter|default('@tom32i') }}" >
+
+            <link rel="canonical" href="{{ app.request.uri }}">
+        {% endblock %}
+
+        {% block stylesheet %}
+            <link rel="stylesheet" href="/css/style.css">
+            <link rel="shortcut icon" href="/favicon.ico">
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        {% endblock %}
+
+        {% block javascript %}
+            <script src="/js/portfolio.js" async></script>
+        {% endblock %}
+    </head>
+    <body {% block body_class '' %}>
+        {% block body %}{% endblock %}
+    </body>
+</html>

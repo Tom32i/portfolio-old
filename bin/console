@@ -1,0 +1,27 @@
+#!/usr/bin/env php
+<?php
+
+set_time_limit(0);
+
+$root = __DIR__.'/..';
+
+require_once $root . '/vendor/autoload.php';
+
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Debug\Debug;
+use Tom32i\Portfolio\Application as Kernel;
+use Tom32i\Portfolio\Console\Application;
+use Tom32i\Portfolio\Console\Command\BuildCommand;
+
+$input = new ArgvInput();
+$env   = $input->getParameterOption(array('--env', '-e'), getenv('SYMFONY_ENV') ?: 'dev');
+$debug = getenv('SYMFONY_DEBUG') !== '0' && !$input->hasParameterOption(array('--no-debug', '')) && $env !== 'prod';
+
+if ($debug) {
+    Debug::enable();
+}
+
+$kernel = new Kernel(['root' => $root, 'env' => $env, 'debug' => $debug]);
+$application = new Application($kernel);
+$application->add(new BuildCommand());
+$application->run();

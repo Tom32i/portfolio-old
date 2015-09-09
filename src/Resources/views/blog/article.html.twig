@@ -1,0 +1,44 @@
+{% extends 'layout.html.twig' %}
+
+{% block body_class 'blog' %}
+
+{% block content %}
+    <hr class="icon-pen">
+
+    <article class="post">
+        <header class="header">
+            {#{ partial "date.html" . }#}
+            <h1 class="title">{#{ .Title }#}</h1>
+        </header>
+        <div class="content">
+            {#{ .Content }#}
+        </div>
+        <footer>
+            {#{ .Render "footer" }#}
+        </footer>
+    </article>
+{% endblock %}
+
+{% block footer %}
+    <h1>THANK YOU FOR READING!</h1>
+
+    <div class="row">
+        {#{ partial "author.html" }#}
+        <div class="articles">
+            <h2>
+                <a href="{#{ .Site.BaseURL }#}/blog">
+                    More tech' articles from me
+                </a>
+            </h2>
+            <ul class="last-post">
+                {#{ $current := . }#}
+                {#{ range where .Site.Pages "Section" "blog" }#}
+                    {#{ if eq $current . }#}
+                    {#{ else }#}
+                        {#{ .Render "link" }#}
+                    {#{ end }#}
+                {#{ end }#}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,89 @@
+/* < 768px */
+
+.tools .tool {
+    width: percentage(1/2);
+    margin: $gutter/3 0;
+
+    svg {
+        max-height: 45px;
+    }
+}
+
+.projects {
+    @include row;
+
+    .project {
+        @include column;
+        width: percentage(1/5);
+        padding-right: ($gutter/2) + 40px;
+        padding-left: ($gutter/2) + 40px;
+
+        .picture {
+            max-width: 450px;
+            margin: 0 auto;
+            display: block;
+        }
+    }
+    .control {
+        padding-top: 60px;
+    }
+}
+
+.methods .method {
+    padding-right: ($gutter/2) + 40px;
+    padding-left: ($gutter/2) + 40px;
+}
+
+.languages .control {
+    padding-top: 120px;
+}
+
+.methods .control {
+    padding-top: 33px;
+}
+
+.badges .control {
+    padding-top: 110px;
+}
+
+.links .link {
+    width: percentage(1/3);
+}
+
+/* Sliders */
+.slider-container {
+    position: relative;
+    overflow: hidden;
+
+    .control {
+        display: block;
+        position: absolute;
+        height: 100%;
+        padding: 0 $gutter/2;
+        font-size: $gutter/2;
+        line-height: $gutter/2;
+        color: $grey-light;
+        text-align: center;
+        box-sizing: border-box;
+        cursor: pointer;
+        transition: opacity 300ms;
+
+        &:hover {
+            color: $grey;
+        }
+
+        &.hide {
+            display: none;
+        }
+
+        &.icon-left {
+            left: 0;
+            padding-right: $gutter;
+        }
+
+        &.icon-right {
+            right: 0;
+            padding-left: $gutter;
+        }
+    }
+}
