@@ -9,9 +9,9 @@ require_once $root . '/vendor/autoload.php';
 
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Debug\Debug;
-use Tom32i\Portfolio\Application as Kernel;
-use Tom32i\Portfolio\Console\Application;
-use Tom32i\Portfolio\Console\Command\BuildCommand;
+use Tom32i\Phpillip\Application as Kernel;
+use Tom32i\Phpillip\Console\Application;
+use Tom32i\Phpillip\Console\Command\BuildCommand;
 
 $input = new ArgvInput();
 $env   = $input->getParameterOption(array('--env', '-e'), getenv('SYMFONY_ENV') ?: 'dev');

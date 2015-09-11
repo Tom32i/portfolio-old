@@ -39,7 +39,7 @@ class BlogController
     public function article(Request $request, Application $app, $article)
     {
         return $app['twig']->render('blog/article.html.twig', [
-            'article' => $app['content_repository']->getContent('article', 'article'),
+            'article' => $app['content_repository']->getContent('article', $article),
         ]);
     }
 }

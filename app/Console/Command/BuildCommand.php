@@ -1,6 +1,7 @@
 <?php
 
-namespace Tom32i\Portfolio\Console\Command;
+
+namespace Tom32i\Phpillip\Console\Command;
 
 use Exception;
 use Symfony\Component\Console\Command\Command;
@@ -9,8 +10,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
-use Tom32i\Portfolio\Console\Service\ContentProvider;
-use Tom32i\Portfolio\Console\Utils\Logger;
+use Tom32i\Phpillip\Console\Service\ContentProvider;
+use Tom32i\Phpillip\Console\Utils\Logger;
 
 /**
  * Build Command
@@ -198,6 +199,6 @@ class BuildCommand extends Command
             $this->files->mkdir($path);
         }
 
-        $this->files->dumpFile($path . $filename, $content);
+        $this->files->dumpFile(rtrim($path, '/') . '/' . $filename, $content);
     }
 }

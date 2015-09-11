@@ -183,6 +183,13 @@ elao_npm_packages:
   - name:    gulp
     version: 3
 
+#######
+# Pip #
+#######
+
+elao_pip_packages:
+  - name: Pygments
+
 ##############
 # Supervisor #
 ##############
@@ -203,9 +210,3 @@ elao_supervisor_configs:
         - autorestart:     true
         - stdout_logfile:  "{{ elao_supervisor_log_dir }}/app-worker-gulp.log"
         - redirect_stderr: true
-
-########
-# HUGO #
-########
-
-elao_hugo_pygments: true

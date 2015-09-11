@@ -1,5 +1,7 @@
 {% extends 'layout.html.twig' %}
 
+{% import 'block/date.html.twig' as date %}
+
 {% block body_class 'blog' %}
 
 {% block content %}
@@ -7,14 +9,16 @@
 
     <article class="post">
         <header class="header">
-            {#{ partial "date.html" . }#}
-            <h1 class="title">{#{ .Title }#}</h1>
+            {{ date.ago(article.date) }}
+            <h1 class="title">
+                {{ article.title }}
+            </h1>
         </header>
         <div class="content">
-            {#{ .Content }#}
+            {{ article.content|raw }}
         </div>
         <footer>
-            {#{ .Render "footer" }#}
+
         </footer>
     </article>
 {% endblock %}
@@ -22,23 +26,24 @@
 {% block footer %}
     <h1>THANK YOU FOR READING!</h1>
 
-    <div class="row">
-        {#{ partial "author.html" }#}
-        <div class="articles">
-            <h2>
-                <a href="{#{ .Site.BaseURL }#}/blog">
-                    More tech' articles from me
-                </a>
-            </h2>
-            <ul class="last-post">
-                {#{ $current := . }#}
-                {#{ range where .Site.Pages "Section" "blog" }#}
-                    {#{ if eq $current . }#}
-                    {#{ else }#}
-                        {#{ .Render "link" }#}
+    {% embed 'blog/footer.html.twig' %}
+        {% block more %}
+            <div class="articles">
+                <h2>
+                    <a href="{#{ .Site.BaseURL }#}/blog">
+                        More tech' articles from me
+                    </a>
+                </h2>
+                <ul class="last-post">
+                    {#{ $current := . }#}
+                    {#{ range where .Site.Pages "Section" "blog" }#}
+                        {#{ if eq $current . }#}
+                        {#{ else }#}
+                            {#{ .Render "link" }#}
+                        {#{ end }#}
                     {#{ end }#}
-                {#{ end }#}
-            </ul>
-        </div>
-    </div>
+                </ul>
+            </div>
+        {% endblock %}
+    {% endembed %}
 {% endblock %}

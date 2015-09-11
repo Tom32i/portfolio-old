@@ -1,0 +1,51 @@
+{% set website = website|default(false) %}
+{% set agency  = agencies[project.agency]|default(null) %}
+
+{% block project %}
+<div class="project">
+    {% if website %}
+        <a href="{{ website }}" class="picture" target="_blank">
+            <img src="/img/project/{{ project.slug }}.png" alt="{{ project.title }}">
+        </a>
+    {% else %}
+        <div class="picture">
+            <img src="/img/project/{{ project.slug }}.png" alt="{{ project.title }}">
+        </div>
+    {% endif %}
+
+    <div class="content">
+        <div class="head">
+            <h2 class="title">
+                {%- if website -%}
+                    <a href="{{ website }}" target="_blank">
+                        {{ project.title }}
+                    </a>
+                {%- else -%}
+                    {{ project.title }}
+                {%- endif -%}
+            </h2>
+
+            <div class="side">
+                {% if website %}
+                    <a href="{{ website }}" class="icon-link website" target="_blank">
+                        {{ website|trim('http://') }}
+                    </a>
+                {% endif %}
+
+                {% if agency %}
+                    <a href="{{ agency.url }}" target="_blank" class="icon-location agency">
+                        {{ agency.name }}
+                    </a>
+                {% endif %}
+
+                <span class="icon-clock date">
+                    {{ project.period|default(project.date|date('Y')) }}
+                </span>
+            </div>
+        </div>
+        <div class="description">
+            <p>{{ project.content }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

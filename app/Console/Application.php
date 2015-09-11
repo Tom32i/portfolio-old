@@ -1,6 +1,7 @@
 <?php
 
-namespace Tom32i\Portfolio\Console;
+
+namespace Tom32i\Phpillip\Console;
 
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
@@ -30,7 +31,7 @@ class Application extends BaseApplication
         $this->kernel = $kernel;
 
         parent::__construct(
-            'Tom32i Portfolio',
+            'Phpillip',
             sprintf(
                 'silex-%s-%s%s',
                 $kernel::VERSION,

@@ -25,7 +25,13 @@ class AppController
         $content = $app['content_repository'];
 
         return $app['twig']->render('index.html.twig', [
-            'language' => $content->getContents('language'),
+            'languages' => $content->getContents('language', 'weight'),
+            'methods'   => $content->getContents('method', 'weight'),
+            'agencies'  => $content->getContents('agency', 'slug'),
+            'projects'  => $content->getContents('project', 'date', false),
+            'badges'    => $content->getContents('badge', 'weight'),
+            'tools'     => $content->getContents('tool'),
+            'links'     => $content->getContents('link', 'weight'),
         ]);
     }
 }

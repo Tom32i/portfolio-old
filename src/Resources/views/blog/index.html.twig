@@ -3,21 +3,21 @@
 {% block body_class 'blog' %}
 
 {% block content %}
+    <hr class="icon-pen">
+
     {% for article in articles %}
-        {#{ template "_internal/pagination.html" . }#}
-
-        {#{ range .Paginator.Pages }#}
-            {#{ .Render "preview" }#}
-        {#{ end }#}
-
-        {#{ template "_internal/pagination.html" . }#}
+        {{ include('content/article/preview.html.twig') }}
     {% endfor %}
 {% endblock %}
 
 {% block footer %}
     <h1>THANK YOU FOR READING!</h1>
 
-    <div class="row">
-        {#{ partial "author.html" }#}
-    </div>
+    {% embed 'blog/footer.html.twig' %}
+        {% block more %}
+            <div class="more">
+
+            </div>
+        {% endblock %}
+    {% endembed %}
 {% endblock %}

@@ -1,6 +1,7 @@
 <?php
 
-namespace Tom32i\Portfolio\Console\Utils;
+
+namespace Tom32i\Phpillip\Console\Utils;
 
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;

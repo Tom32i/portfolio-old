@@ -1,0 +1,22 @@
+{% import 'block/date.html.twig' as date %}
+
+{% set url = path('article', {'article': article.slug}) %}
+
+{% block preview %}
+<article class="post preview">
+    <header class="header">
+        {{ date.ago(article.date) }}
+        <h2>
+            <a href='{{ url }}'>
+                {{ article.title }}
+            </a>
+        </h2>
+    </header>
+    <p>{{ article.description }}</p>
+    <foo ter class="footer">
+        <a href='{{ url }}'>
+            Read
+        </a>
+    </footer>
+</article>
+{% endblock %}

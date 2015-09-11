@@ -19,6 +19,7 @@
     - { role: elao.nodejs }
     - { role: elao.npm }
     - { role: elao.logio }
+    - { role: elao.python }
     - { role: elao.pip }
     - { role: elao.php }
     - { role: elao.composer }

@@ -1,0 +1,11 @@
+{%- if link.url -%}
+    <a href="{{ link.url }}" class="link" target="_blank" title="{{ link.name }}">
+        <span class="icon-{{ link.icon }} {{ link.color }}"></span>
+        {{ link.name }}
+    </a>
+{%- else -%}
+    <p class="link">
+        <span class="icon-{{ link.icon }} {{ link.color }}"></span>
+        {{ link.name }}
+    </p>
+{%- endif -%}
