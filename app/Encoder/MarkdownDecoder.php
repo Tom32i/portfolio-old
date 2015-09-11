@@ -2,15 +2,14 @@
 
 namespace Tom32i\Phpillip\Encoder;
 
-use Parsedown;
 use Symfony\Component\Serializer\Encoder\DecoderInterface;
-use Symfony\Component\Serializer\Encoder\EncoderInterface;
 use Symfony\Component\Yaml\Yaml;
+use Tom32i\Phpillip\Service\Parsedown;
 
 /**
  * Encodes Markdown data
  */
-class MarkdownEncoder implements EncoderInterface, DecoderInterface
+class MarkdownDecoder implements  DecoderInterface
 {
     /**
      * Supported format
@@ -21,14 +20,6 @@ class MarkdownEncoder implements EncoderInterface, DecoderInterface
      * Head separator
      */
     const HEAD_SEPARATOR = '---';
-
-    /**
-     * {@inheritdoc}
-     */
-    public function encode($data, $format, array $context = array())
-    {
-        return $data;
-    }
 
     /**
      * {@inheritdoc}
@@ -48,14 +39,6 @@ class MarkdownEncoder implements EncoderInterface, DecoderInterface
         }
 
         return ['content' => $this->markdownify($data)];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsEncoding($format)
-    {
-        return self::FORMAT === $format;
     }
 
     /**

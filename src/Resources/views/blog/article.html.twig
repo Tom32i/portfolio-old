@@ -30,18 +30,16 @@
         {% block more %}
             <div class="articles">
                 <h2>
-                    <a href="{#{ .Site.BaseURL }#}/blog">
+                    <a href="{{ path('blog') }}">
                         More tech' articles from me
                     </a>
                 </h2>
                 <ul class="last-post">
-                    {#{ $current := . }#}
-                    {#{ range where .Site.Pages "Section" "blog" }#}
-                        {#{ if eq $current . }#}
-                        {#{ else }#}
-                            {#{ .Render "link" }#}
-                        {#{ end }#}
-                    {#{ end }#}
+                    {% for article in articles %}
+                        <li>
+                            {{ include('content/article/link.html.twig') }}
+                        </li>
+                    {% endfor %}
                 </ul>
             </div>
         {% endblock %}

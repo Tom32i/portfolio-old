@@ -47,7 +47,6 @@ ArrayCollection.prototype.clear = function()
 };
 ```
 
-
 Suspendisse potenti. Maecenas sollicitudin at odio pellentesque vulputate. Phasellus ut lectus scelerisque, convallis nisi nec, tristique dolor. Cras aliquam mollis vulputate. Nulla malesuada quis ante sit amet consectetur. Sed eget maximus diam, non condimentum orci. Curabitur fringilla nisi at dui dapibus laoreet.
 Suspendisse potenti. Maecenas sollicitudin at odio pellentesque vulputate. Phasellus ut lectus scelerisque, convallis nisi nec, tristique dolor. Cras aliquam mollis vulputate. Nulla malesuada quis ante sit amet consectetur. Sed eget maximus diam, non condimentum orci. Curabitur fringilla nisi at dui dapibus laoreet.
 

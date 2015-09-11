@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tom32i\Phpillip\Service;
 
 use DateTime;
@@ -62,6 +61,7 @@ class ContentRepository
      *
      * @param string $type Type of content to load
      * @param string $indexBy Index the results by the given field name
+     * @param string $order true for asc, false for desc
      *
      * @return array
      */

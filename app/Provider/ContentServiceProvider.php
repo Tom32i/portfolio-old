@@ -7,7 +7,7 @@ use Silex\ServiceProviderInterface;
 use Symfony\Component\Serializer\Encoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
-use Tom32i\Phpillip\Encoder\MarkdownEncoder;
+use Tom32i\Phpillip\Encoder\MarkdownDecoder;
 use Tom32i\Phpillip\Encoder\YamlEncoder;
 use Tom32i\Phpillip\Service\ContentRepository;
 
@@ -28,7 +28,7 @@ class ContentServiceProvider implements ServiceProviderInterface
                     new Encoder\XmlEncoder(),
                     new Encoder\JsonEncoder(),
                     new YamlEncoder(),
-                    new MarkdownEncoder(),
+                    new MarkdownDecoder(),
                 ]
             );
         });

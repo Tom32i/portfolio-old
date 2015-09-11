@@ -5,6 +5,7 @@ namespace Tom32i\Portfolio\Controller;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Tom32i\Phpillip\Service\Paginator;
 
 
 /**
@@ -20,10 +21,14 @@ class BlogController
      *
      * @return Response
      */
-    public function index(Request $request, Application $app)
+    public function index(Request $request, Application $app, $page = 1)
     {
+        $paginator = new Paginator($app['content_repository']->getContents('article', 'date', false));
+
         return $app['twig']->render('blog/index.html.twig', [
-            'articles' => $app['content_repository']->getContents('article'),
+            'articles' => $paginator->get($page),
+            'pages'    => $paginator->count(),
+            'page'     => $page,
         ]);
     }
 
@@ -39,7 +44,8 @@ class BlogController
     public function article(Request $request, Application $app, $article)
     {
         return $app['twig']->render('blog/article.html.twig', [
-            'article' => $app['content_repository']->getContent('article', $article),
+            'article'  => $app['content_repository']->getContent('article', $article),
+            'articles' => $app['content_repository']->getContents('article', 'date', false, 5),
         ]);
     }
 }

@@ -28,6 +28,7 @@ final class Application extends BaseApplication
             'root'        => $values['root'],
             'environment' => $values['env'] ?: 'production',
             'debug'       => $values['debug'] ?: false,
+            'route_class' => 'Tom32i\Phpillip\Routing\Route',
         ]);
 
         $this->register(new Provider\TwigServiceProvider(), [

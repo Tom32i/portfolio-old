@@ -1,0 +1,17 @@
+{% block pagination %}
+{% if pages > 1 %}
+    <ul>
+    {% for p in 1..pages %}
+        <li>
+            {% if p == page %}
+                {{ p }}
+            {% else %}
+                <a href="{{ path(route, {page: p}) }}">
+                    {{ p }}
+                </a>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}

@@ -8,6 +8,10 @@
     {% for article in articles %}
         {{ include('content/article/preview.html.twig') }}
     {% endfor %}
+
+    {% embed 'block/pagination.html.twig' %}
+        {% set route = 'blog' %}
+    {% endembed %}
 {% endblock %}
 
 {% block footer %}

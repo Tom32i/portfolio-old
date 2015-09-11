@@ -18,10 +18,13 @@ class ControllerServiceProvider implements ServiceProviderInterface
         $app->get('/', 'Tom32i\\Portfolio\\Controller\\AppController::index')
             ->bind('homepage');
 
-        $app->get('/blog', 'Tom32i\\Portfolio\\Controller\\BlogController::index')
+        $test = $app->get('/blog', 'Tom32i\\Portfolio\\Controller\\BlogController::index')
+            ->content('article')
+            ->paginate()
             ->bind('blog');
 
         $app->get('/blog/{article}', 'Tom32i\\Portfolio\\Controller\\BlogController::article')
+            ->content('article')
             ->bind('article');
     }
 

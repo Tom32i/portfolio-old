@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tom32i\Phpillip\Console\Command;
 
 use Exception;
@@ -9,9 +8,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Route;
 use Tom32i\Phpillip\Console\Service\ContentProvider;
 use Tom32i\Phpillip\Console\Utils\Logger;
+use Tom32i\Phpillip\Routing\Route;
+use Tom32i\Phpillip\Service\Paginator;
 
 /**
  * Build Command
@@ -85,6 +85,7 @@ class BuildCommand extends Command
     /**
      * Dump route content to dist file
      *
+     * @param string $name
      * @param Route $route
      */
     private function dump($name, Route $route)
@@ -93,31 +94,64 @@ class BuildCommand extends Command
             throw new Exception(sprintf('Invalid methods for route "%s".', $name), 1);
         }
 
-        $parameters = $this->getParameters($name, $route);
-
-        if (empty($parameters)) {
+        if ($route->hasContent()) {
+            if ($route->isPaginated()) {
+                $this->buildPaginatedRoute($name, $route);
+            } else {
+                $this->buildContentRoute($name, $route);
+            }
+        } else {
             $this->logger->log(sprintf('Building route <comment>%s</comment>', $name));
             $this->build($name, $route);
-        } else {
-            $this->logger->log(sprintf(
-                'Building route <comment>%s</comment> for <info>%s</info> <comment>%s(s)</comment>',
-                $name,
-                count(array_values($parameters)[0]),
-                array_keys($parameters)[0]
-            ));
-
-            $this->logger->getProgress(count($parameters));
-            $this->logger->start();
-
-            foreach ($parameters as $variable => $contents) {
-                foreach ($contents as $content) {
-                    $this->build($name, $route, [$variable => $content]);
-                    $this->logger->advance();
-                }
-            }
-
-            $this->logger->finish();
         }
+    }
+
+    /**
+     * Build paginated route
+     *
+     * @param string $name
+     * @param Route $route
+     */
+    private function buildPaginatedRoute($name, Route $route)
+    {
+        $type       = $route->getContent();
+        $contents   = $this->content->listContents($type);
+        $paginator  = new Paginator($contents);
+        $length     = $paginator->count();
+
+        $this->logger->log(sprintf('Building route <comment>%s</comment> for <info>%s</info> pages', $name, $length));
+        $this->logger->getProgress($length);
+        $this->logger->start();
+
+        for ($i = 1; $i <= $length; $i++) {
+            $this->build($name, $route, ['page' => $i]);
+        }
+
+        $this->logger->finish();
+    }
+
+    /**
+     * Build content route
+     *
+     * @param string $name
+     * @param Route $route
+     */
+    private function buildContentRoute($name, Route $route)
+    {
+        $type       = $route->getContent();
+        $contents   = $this->content->listContents($type);
+        $length     = count($contents);
+
+        $this->logger->log(sprintf('Building route <comment>%s</comment> for <info>%s</info> <comment>%s(s)</comment>', $name, $length, $type));
+        $this->logger->getProgress($length);
+        $this->logger->start();
+
+        foreach ($contents as $content) {
+            $this->build($name, $route, [$type => $content]);
+            $this->logger->advance();
+        }
+
+        $this->logger->finish();
     }
 
     /**
@@ -129,8 +163,15 @@ class BuildCommand extends Command
      */
     private function build($name, Route $route, array $parameters = [])
     {
-        $content = $this->call($name, $route, $parameters);
-        $path    = '/' . trim($route->getPath(), '/');
+        $parameters = array_merge($route->compile()->getVariables(), $parameters);
+        $content    = $this->call($name, $route, $parameters);
+        $path       = '/' . trim($route->getPath(), '/');
+
+        foreach ($route->getDefaults() as $key => $value) {
+            if (isset($parameters[$key]) && $parameters[$key] == $value) {
+                $path = rtrim(preg_replace(sprintf('#{%s}/?#', $key), null, $path), '/');
+            }
+        }
 
         foreach ($parameters as $key => $value) {
             $path = str_replace(sprintf('{%s}', $key), (string) $value, $path);
@@ -139,36 +180,6 @@ class BuildCommand extends Command
         $this->write($this->destination . $path, $content);
 
         $this->logger->log(sprintf('    Build path <comment>%s</comment>', $path));
-    }
-
-    /**
-     * Get parameters for the given route
-     *
-     * @param string $name
-     * @param Route $route
-     *
-     * @return array
-     */
-    private function getParameters($name, Route $route)
-    {
-        $variables = $route->compile()->getVariables();
-
-        switch (count($variables)) {
-            case 0:
-                return [];
-
-            case 1:
-                $variable = array_shift($variables);
-
-                return [$variable => $this->content->listContents($variable)];
-
-            default:
-                throw new Exception(sprintf(
-                    'Only one url variable accepted, %s provided for route "%s".',
-                    count($variables),
-                    $name
-                ), 1);
-        }
     }
 
     /**
