@@ -29,6 +29,7 @@ class BlogController
             'articles' => $paginator->get($page),
             'pages'    => $paginator->count(),
             'page'     => $page,
+            'latest'   => $app['content_repository']->getContents('article', 'date', false, 5),
         ]);
     }
 
@@ -44,8 +45,8 @@ class BlogController
     public function article(Request $request, Application $app, $article)
     {
         return $app['twig']->render('blog/article.html.twig', [
-            'article'  => $app['content_repository']->getContent('article', $article),
-            'articles' => $app['content_repository']->getContents('article', 'date', false, 5),
+            'article' => $app['content_repository']->getContent('article', $article),
+            'latest'  => $app['content_repository']->getContents('article', 'date', false, 5),
         ]);
     }
 }

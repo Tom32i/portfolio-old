@@ -1,7 +1,10 @@
-.post {
-
+.article {
     h1, h2, h3, h4, h5 {
         text-align: left;
+
+        a {
+            color: $black;
+        }
     }
 
     h1 { font-weight: $font-bold; }
@@ -18,22 +21,35 @@
             right: 0;
             bottom: 0;
             color: $grey-light;
+            line-height: 2.8em;
+        }
+
+        .title {
+            margin-bottom: 1em;
         }
     }
 
     .content {
+        h1, h2, h3, h4, h5 {
+            margin-top: 1.8em;
+            margin-bottom: 1.2em;
+            font-weight: $font-bold;
+        }
+
         p, ul, ol {
-            font-family: Georgia, serif;
-            line-height: 1.9em;
-            font-size: 22px;
+            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+            line-height: 1.5em;
+            font-size: 1.3em;
+            font-style: normal;
         }
 
         blockquote {
             position: relative;
+            font-size: 120%;
 
             p:first-child:before,
             p:last-child:after {
-                font-size: 1.6em;
+                font-size: 1.4em;
                 line-height: 0em;
                 color: $grey-light;
             }
@@ -62,12 +78,6 @@
             &:first-child {
                 margin-top: 0;
             }
-        }
-    }
-
-    &.preview {
-        .header a {
-            color: $black;
         }
     }
 }

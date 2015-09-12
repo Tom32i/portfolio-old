@@ -26,21 +26,17 @@
             </h2>
 
             <div class="side">
+                {% spaceless %}
                 {% if website %}
-                    <a href="{{ website }}" class="icon-link website" target="_blank">
-                        {{ website|trim('http://') }}
-                    </a>
+                    <a href="{{ website }}" class="icon-link website" target="_blank">{{ website|trim('http://') }}</a>
                 {% endif %}
 
                 {% if agency %}
-                    <a href="{{ agency.url }}" target="_blank" class="icon-location agency">
-                        {{ agency.name }}
-                    </a>
+                    <a href="{{ agency.url }}" target="_blank" class="icon-location agency">{{ agency.name }}</a>
                 {% endif %}
 
-                <span class="icon-clock date">
-                    {{ project.period|default(project.date|date('Y')) }}
-                </span>
+                <span class="icon-clock date">{{ project.period|default(project.date|date('Y')) }}</span>
+                {% endspaceless %}
             </div>
         </div>
         <div class="description">

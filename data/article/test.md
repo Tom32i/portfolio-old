@@ -18,7 +18,7 @@ I'm a:
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc pretium vulputate lorem in aliquet. Aenean dignissim, dolor sit amet fringilla ornare, libero magna elementum nisi, euismod scelerisque nulla enim id nisi. Phasellus vel consectetur neque, ac pharetra justo. Curabitur tincidunt mollis vehicula. Proin metus sapien, accumsan quis ex ac, venenatis pharetra magna. Phasellus ultricies mi enim, iaculis congue massa pulvinar vitae. Vestibulum finibus neque nisi. Integer vel viverra metus. Fusce vestibulum nunc mollis nibh ultricies molestie. Etiam eu erat sit amet libero semper bibendum. Nunc ligula eros, blandit in semper sit amet, dignissim sed est. Curabitur eu justo eget quam semper iaculis sed vel nulla. Maecenas ut semper massa. Quisque finibus pharetra egestas. Maecenas semper ligula sit amet leo venenatis, ac sagittis justo commodo. Curabitur pharetra ligula sit amet ligula condimentum interdum.
 
-> Quoting someone
+> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc pretium vulputate lorem in aliquet. Aenean dignissim, dolor sit amet fringilla ornare, libero mag
 
 Suspendisse potenti. Maecenas sollicitudin at odio pellentesque vulputate. Phasellus ut lectus scelerisque, convallis nisi nec, tristique dolor. Cras aliquam mollis vulputate. Nulla malesuada quis ante sit amet consectetur. Sed eget maximus diam, non condimentum orci. Curabitur fringilla nisi at dui dapibus laoreet.
 

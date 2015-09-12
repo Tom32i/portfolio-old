@@ -16,6 +16,8 @@
     }
 
     .site-footer {
+        color: $grey-light;
+
         h1, h2, h3, h4, h5 {
             font-weight: $font-light;
             line-height: 1em;
@@ -51,6 +53,22 @@
         .articles {
             @extend .column;
             width: percentage(2/3);
+
+            .all {
+                float: right;
+                font-size: 0.8em;
+            }
+
+            .lastest {
+                padding-left: 0;
+                list-style: none;
+
+                time {
+                    color: darken($grey-light, 20%);
+                    font-size: 0.7em;
+                    float: right;
+                }
+            }
         }
     }
 
@@ -58,7 +76,17 @@
         max-width: 740px;
     }
 
-    hr {
+    /* Article list */
+
+    .article.preview {
         margin: $gutter 0;
+
+        .title {
+            margin-bottom: 0;
+        }
+
+        .description {
+            margin: 0.5em 0;
+        }
     }
 }

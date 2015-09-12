@@ -3,20 +3,17 @@
 {% set url = path('article', {'article': article.slug}) %}
 
 {% block preview %}
-<article class="post preview">
+<article class="article preview">
     <header class="header">
         {{ date.ago(article.date) }}
-        <h2>
-            <a href='{{ url }}'>
+        <a href="{{ path('article', {article: article.slug}) }}">
+            <h1 class="title">
                 {{ article.title }}
-            </a>
-        </h2>
-    </header>
-    <p>{{ article.description }}</p>
-    <foo ter class="footer">
-        <a href='{{ url }}'>
-            Read
+            </h1>
         </a>
-    </footer>
+    </header>
+    <div class="content">
+        <p class="description">{{ article.description }}</p>
+    </div>
 </article>
 {% endblock %}

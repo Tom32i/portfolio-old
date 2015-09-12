@@ -25,7 +25,7 @@ h2 {
 
 a {
     &, &:visited, &:active {
-        color: $orange;
+        color: $purple;
         text-decoration: none;
     }
 
@@ -59,4 +59,9 @@ hr {
         font-size: $hr-icon-height;
         line-height: $hr-icon-height;
     }
+}
+
+[class^="icon-"]:before,
+[class*=" icon-"]:before  {
+    text-decoration: none;
 }

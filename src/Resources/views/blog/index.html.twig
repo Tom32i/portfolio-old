@@ -1,6 +1,7 @@
 {% extends 'layout.html.twig' %}
 
 {% block body_class 'blog' %}
+{% block home_link path('blog') %}
 
 {% block content %}
     <hr class="icon-pen">
@@ -15,13 +16,6 @@
 {% endblock %}
 
 {% block footer %}
-    <h1>THANK YOU FOR READING!</h1>
-
-    {% embed 'blog/footer.html.twig' %}
-        {% block more %}
-            <div class="more">
-
-            </div>
-        {% endblock %}
-    {% endembed %}
+    <h1>THOMAS JARRAND'S TECH BLOG</h1>
+    {{ include('blog/footer.html.twig') }}
 {% endblock %}

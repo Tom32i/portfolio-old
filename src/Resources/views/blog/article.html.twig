@@ -3,11 +3,11 @@
 {% import 'block/date.html.twig' as date %}
 
 {% block body_class 'blog' %}
+    {% block home_link path('blog') %}
 
 {% block content %}
     <hr class="icon-pen">
-
-    <article class="post">
+    <article class="article">
         <header class="header">
             {{ date.ago(article.date) }}
             <h1 class="title">
@@ -18,30 +18,22 @@
             {{ article.content|raw }}
         </div>
         <footer>
-
+            <hr class="icon-talk">
+            <div
+                id="disqus_thread"
+                data-shortname="thomas-jarrand-tech-blog"
+                data-identifier="{{ article.slug }}"
+                data-title="{{ article.title }}"
+                data-url="{{ url("article", {article: article.slug}) }}"
+                class="comments"
+            >
+                <button type="button" class="enable">Any questions or comments?</button>
+            </div>
         </footer>
     </article>
 {% endblock %}
 
 {% block footer %}
     <h1>THANK YOU FOR READING!</h1>
-
-    {% embed 'blog/footer.html.twig' %}
-        {% block more %}
-            <div class="articles">
-                <h2>
-                    <a href="{{ path('blog') }}">
-                        More tech' articles from me
-                    </a>
-                </h2>
-                <ul class="last-post">
-                    {% for article in articles %}
-                        <li>
-                            {{ include('content/article/link.html.twig') }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endblock %}
-    {% endembed %}
+    {{ include('blog/footer.html.twig') }}
 {% endblock %}

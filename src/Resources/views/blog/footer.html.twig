@@ -1,13 +1,28 @@
 <div class="row">
     {% block about %}
         <div class="about">
-            <h2>About the author:</h2>
+            <h2>About the author</h2>
             <a href="/" class="link">
-                <img class="avatar" src="https://pbs.twimg.com/profile_images/446924259328131072/tCLuF8mt.jpeg">
+                <img class="avatar" src="/img/tom32i.jpg">
                 <span class="name">Tom32i</span>
             </a>
         </div>
     {% endblock %}
     {% block more %}
+        <div class="articles">
+            <h2>
+                <a href="{{ path('blog') }}" class="all icon-right">
+                    All articles
+                </a>
+                Latest tech articles
+            </h2>
+            <ul class="lastest">
+                {% for article in latest %}
+                    <li>
+                        {{ include('content/article/link.html.twig') }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
     {% endblock %}
 </div>
