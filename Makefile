@@ -53,5 +53,7 @@ stop-dev:
 
 ## Publish
 publish:
+	rm -rf dist
 	vagrant ssh -c 'cd /srv/app && make build'
+	chmod -R 755 dist
 	rsync -arzv dist/* dédié:/home/tom32i/sites/blog
