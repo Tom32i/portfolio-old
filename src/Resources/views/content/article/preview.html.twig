@@ -6,11 +6,11 @@
 <article class="article preview">
     <header class="header">
         {{ date.ago(article.date) }}
-        <a href="{{ path('article', {article: article.slug}) }}">
-            <h1 class="title">
+        <h1 class="title">
+            <a href="{{ path('article', {article: article.slug}) }}">
                 {{ article.title }}
-            </h1>
-        </a>
+            </a>
+        </h1>
     </header>
     <div class="content">
         <p class="description">{{ article.description }}</p>
