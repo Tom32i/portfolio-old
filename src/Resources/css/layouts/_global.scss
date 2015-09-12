@@ -6,7 +6,7 @@
     font-size: $font-size-h1;
     line-height: 1.2em;
 
-    a, a:visited, a:active{
+    a, a:visited, a:active {
         color: $black;
         text-decoration: none;
     }
@@ -15,8 +15,7 @@
         color: #000000;
     }
 
-    .sub-title
-    {
+    .sub-title {
         font-size: 60%;
         line-height: 1em;
         font-weight: 200;
@@ -42,7 +41,7 @@
     }
 
     .copyright {
-        text-align: right;
+        text-align: center;
         margin-top: $gutter/2;
 
         p {

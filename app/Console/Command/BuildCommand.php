@@ -4,10 +4,12 @@ namespace Tom32i\Phpillip\Console\Command;
 
 use Exception;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Tom32i\Phpillip\Console\Service\ContentProvider;
 use Tom32i\Phpillip\Console\Utils\Logger;
 use Tom32i\Phpillip\Routing\Route;
@@ -47,6 +49,13 @@ class BuildCommand extends Command
     private $logger;
 
     /**
+     * Host for absolute urls
+     *
+     * @var string
+     */
+    private $host;
+
+    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -54,6 +63,11 @@ class BuildCommand extends Command
         $this
             ->setName('portfolio:build')
             ->setDescription('Build portfolio')
+            ->addArgument(
+                'host',
+                InputArgument::OPTIONAL,
+                'What should be use as domain name for absolute url?'
+            )
         ;
     }
 
@@ -68,6 +82,10 @@ class BuildCommand extends Command
         $this->content      = $this->app['content_repository'];
         $this->urlGenerator = $this->app['url_generator'];
         $this->destination  = $this->app['root'] . '/dist';
+
+        if ($this->host = $input->getArgument('host')) {
+            $this->urlGenerator->getContext()->setHost($this->host);
+        }
     }
 
     /**
@@ -191,9 +209,10 @@ class BuildCommand extends Command
      */
     private function call($name, Route $route, array $parameters = [])
     {
-        $url      = $this->urlGenerator->generate($name, $parameters);
-        $request  = Request::create($url, 'GET', $parameters);
-        $response = $this->app->handle($request);
+        $referenceType = $this->host ? UrlGeneratorInterface::ABSOLUTE_URL : UrlGeneratorInterface::ABSOLUTE_PATH;
+        $url           = $this->urlGenerator->generate($name, $parameters, $referenceType);
+        $request       = Request::create($url, 'GET', $parameters);
+        $response      = $this->app->handle($request);
 
         return $response->getContent();
     }

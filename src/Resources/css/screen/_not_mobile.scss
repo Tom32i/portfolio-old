@@ -35,3 +35,25 @@
         }
     }
 }
+
+.article .header time {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.badges .badge:hover .picture {
+    margin-top: 0;
+}
+
+.blog .site-footer {
+    .about {
+        @extend .column;
+        width: percentage(1/3);
+    }
+
+    .articles {
+        @extend .column;
+        width: percentage(2/3);
+    }
+}

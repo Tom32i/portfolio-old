@@ -3,6 +3,6 @@
 {% block link %}
 <a href='{{ path('article', {'article': article.slug}) }}'>
     {{ article.title }}
-    {{ date.ago(article.date) }}
 </a>
+{{ date.ago(article.date) }}
 {% endblock %}

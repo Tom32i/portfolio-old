@@ -9,10 +9,10 @@
     <hr class="icon-pen">
     <article class="article">
         <header class="header">
-            {{ date.ago(article.date) }}
             <h1 class="title">
                 {{ article.title }}
             </h1>
+            {{ date.ago(article.date) }}
         </header>
         <div class="content">
             {{ article.content|raw }}

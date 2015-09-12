@@ -15,17 +15,16 @@
 
     .header {
         position: relative;
+        margin-top: 1em;
+        margin-bottom: 1em;
 
         time {
-            position: absolute;
-            right: 0;
-            bottom: 0;
             color: $grey-light;
             line-height: 2.8em;
         }
 
         .title {
-            margin-bottom: 1em;
+            margin: 0;
         }
     }
 

@@ -11,9 +11,6 @@
         h2 { font-size: 1.4em; }
 
         .about {
-            @extend .column;
-            width: percentage(1/3);
-
             .link {
                 font-size: 1.2em;
 
@@ -35,22 +32,18 @@
         }
 
         .articles {
-            @extend .column;
-            width: percentage(2/3);
-
-            .all {
-                float: right;
-                font-size: 0.8em;
-            }
-
-            .lastest {
+            .latest {
                 padding-left: 0;
                 list-style: none;
+
+                li {
+                    margin: ($gutter/8) 0;
+                    @include clearfix;
+                }
 
                 time {
                     color: darken($grey-light, 20%);
                     font-size: 0.7em;
-                    float: right;
                 }
             }
         }

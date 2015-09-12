@@ -3,7 +3,8 @@
  *
  * @param {Element} element
  */
-function Slider (element) {
+function Slider (element)
+{
     this.element    = element;
     this.controls   = Array(2);
     this.enabled    = false;
@@ -78,7 +79,14 @@ Slider.prototype.onControl = function(event)
 Slider.prototype.onTouchStart = function(event)
 {
     if (!this.touch && event.targetTouches.length === 1) {
-        this.touch = event.targetTouches[0];
+        var touch = event.targetTouches[0];
+
+        this.touch = {
+            identifier: touch.identifier,
+            pageX: touch.pageX,
+            pageY: touch.pageY
+        };
+
         this.start = this.current;
         this.element.style.transition = 'none';
         this.onFrame();
@@ -183,8 +191,6 @@ Slider.prototype.disable = function()
         this.element.removeEventListener('touchcancel', this.onTouchEnd);
         this.element.removeEventListener('touchleave', this.onTouchEnd);
         this.element.removeEventListener('touchmove', this.onTouchMove);
-
-        console.log('disable', this.controls.length);
 
         for (var control, i = this.controls.length - 1; i >= 0; i--) {
             control = this.controls[i];

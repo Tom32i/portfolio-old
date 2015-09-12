@@ -54,4 +54,4 @@ stop-dev:
 ## Publish
 publish:
 	vagrant ssh -c 'cd /srv/app && make build'
-	rsync -arzv public/* dédié:/home/tom32i/sites/blog
+	rsync -arzv dist/* dédié:/home/tom32i/sites/blog

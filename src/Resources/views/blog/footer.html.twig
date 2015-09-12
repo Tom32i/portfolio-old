@@ -11,12 +11,11 @@
     {% block more %}
         <div class="articles">
             <h2>
-                <a href="{{ path('blog') }}" class="all icon-right">
-                    All articles
+                <a href="{{ path('blog') }}">
+                    Latest tech articles
                 </a>
-                Latest tech articles
             </h2>
-            <ul class="lastest">
+            <ul class="latest">
                 {% for article in latest %}
                     <li>
                         {{ include('content/article/link.html.twig') }}

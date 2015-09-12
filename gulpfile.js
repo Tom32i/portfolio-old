@@ -66,7 +66,7 @@ gulp.task('public', function() {
 });
 
 gulp.task('html', shell.task([
-    'bin/console portfolio:build',
+    'bin/console portfolio:build thomas.jarrand.fr',
 ]));
 
 gulp.task('watch', ['dev'], function () {
