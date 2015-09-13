@@ -44,11 +44,11 @@ class Pygments
      */
     public function highlight($value, $language)
     {
-        $path = sprintf('%s/pyg-%s.%s', $this->tmp, uniqid(), $this->getExtension($language));
+        $path = tempnam($this->tmp, 'pyg');
 
         $this->files->dumpFile($path, $value);
 
-        $value = $this->pygmentize($path);
+        $value = $this->pygmentize($path, $language);
 
         unlink($path);
 
@@ -59,12 +59,13 @@ class Pygments
      * Run 'pygmentize' command on the given file
      *
      * @param string $path
+     * @param string $language
      *
      * @return string
      */
-    public function pygmentize($path)
+    public function pygmentize($path, $language)
     {
-        $process = new Process(sprintf('pygmentize -f html %s', $path));
+        $process = new Process(sprintf('pygmentize -f html -l %s %s', $language, $path));
 
         $process->run();
 
@@ -73,23 +74,5 @@ class Pygments
         }
 
         return $process->getOutput();
-    }
-
-    /**
-     * Get extension for the given language
-     *
-     * @param string $language
-     *
-     * @return string
-     */
-    private function getExtension($language)
-    {
-        switch ($language) {
-            case 'javascript':
-                return 'js';
-
-            default:
-                return strtolower($language);
-        }
     }
 }

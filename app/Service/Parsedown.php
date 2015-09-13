@@ -30,12 +30,7 @@ class Parsedown extends BaseParsedown
      */
     protected function blockCodeComplete($Block)
     {
-        $Block = parent::blockCodeComplete($block);
-
-        $Block['element']['text']['text'] = $this->pygments->highlight(
-            $Block['element']['text']['text'],
-            $this->getLanguage($Block)
-        );
+        $Block['element']['text']['text'] = $this->getCode($Block);
 
         return $Block;
     }
@@ -45,14 +40,31 @@ class Parsedown extends BaseParsedown
      */
     protected function blockFencedCodeComplete($Block)
     {
-        $Block = parent::blockFencedCodeComplete($Block);
-
-        $Block['element']['text']['text'] = $this->pygments->highlight(
-            $Block['element']['text']['text'],
-            $this->getLanguage($Block)
-        );
+        $Block['element']['text']['text'] = $this->getCode($Block);
 
         return $Block;
+    }
+
+    /**
+     * Process code content
+     *
+     * @param string $text
+     *
+     * @return string
+     */
+    private function getCode($Block)
+    {
+        if (!isset($Block['element']['text']['text'])) {
+            return null;
+        }
+
+        $text = $Block['element']['text']['text'];
+
+        if ($language = $this->getLanguage($Block)) {
+            return $this->pygments->highlight($text, $language);
+        }
+
+        return htmlspecialchars($text, ENT_NOQUOTES, 'UTF-8');
     }
 
     /**
@@ -64,6 +76,10 @@ class Parsedown extends BaseParsedown
      */
     private function getLanguage($Block)
     {
+        if (!isset($Block['element']['text']['attributes'])) {
+            return null;
+        }
+
         return substr($Block['element']['text']['attributes']['class'], strlen('language-'));
     }
 }
