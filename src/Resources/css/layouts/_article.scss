@@ -64,6 +64,13 @@
             }
         }
 
+        p > code {
+            background-color: darken($grey-lighter, 10%);
+            color: $black;
+            border-radius: 2px;
+            padding: 0px 3px;
+        }
+
         .highlight {
             padding: $gutter/2;
             line-height: 1.2em;
