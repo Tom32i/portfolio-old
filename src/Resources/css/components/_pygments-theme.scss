@@ -14,12 +14,14 @@ $code-purple: #ae81ff;
         padding: 0;
         margin: 0;
         font-family: "Monaco", "Courier New", monospace;
+        color: $code-white;
     }
 
     .hll { background-color: #49483e }
     .err { color: #960050; background-color: #1e0010 } /* Error */
     .c { color: $code-grey } /* Comment */
-    .k { color: $code-blue } /* Keyword */
+    .k { color: $code-red } /* Keyword */
+    .k + .k { color: $code-blue } /* Keyword */
     .l { color: $code-purple } /* Literal */
     .n { color: $code-white } /* Name */
     .o { color: $code-red } /* Operator */
@@ -40,8 +42,9 @@ $code-purple: #ae81ff;
     .m { color: $code-purple } /* Literal.Number */
     .s { color: $code-lime } /* Literal.String */
     .na { color: $code-green } /* Name.Attribute */
+    .o + .na { color: $code-white } /* Name.Attribute */
     .nb { color: $code-white } /* Name.Builtin */
-    .nc { color: $code-green } /* Name.Class */
+    .nc { color: $code-white } /* Name.Class */
     .no { color: $code-blue } /* Name.Constant */
     .nd { color: $code-green } /* Name.Decorator */
     .ni { color: $code-white } /* Name.Entity */
@@ -49,7 +52,7 @@ $code-purple: #ae81ff;
     .nf { color: $code-green } /* Name.Function */
     .nl { color: $code-white } /* Name.Label */
     .nn { color: $code-white } /* Name.Namespace */
-    .nx { color: $code-green } /* Name.Other */
+    .nx { color: $code-white } /* Name.Other */
     .py { color: $code-white } /* Name.Property */
     .nt { color: $code-red } /* Name.Tag */
     .nv { color: $code-white } /* Name.Variable */
@@ -61,7 +64,7 @@ $code-purple: #ae81ff;
     .mo { color: $code-purple } /* Literal.Number.Oct */
     .sb { color: $code-lime } /* Literal.String.Backtick */
     .sc { color: $code-lime } /* Literal.String.Char */
-    .sd { color: $code-lime } /* Literal.String.Doc */
+    .sd { color: $code-grey } /* Literal.String.Doc */
     .s2 { color: $code-lime } /* Literal.String.Double */
     .se { color: $code-purple } /* Literal.String.Escape */
     .sh { color: $code-lime } /* Literal.String.Heredoc */
@@ -80,4 +83,6 @@ $code-purple: #ae81ff;
     .gu { color: $code-grey; } /* Generic.Subheading & Diff Unified/Comment? */
     .gd { color: $code-red; } /* Generic.Deleted & Diff Deleted */
     .gi { color: $code-green; } /* Generic.Inserted & Diff Inserted */
+
+    .l-Scalar-Plain { color: $code-red }
 }

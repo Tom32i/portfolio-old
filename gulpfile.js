@@ -14,6 +14,7 @@ var gulp       = require('gulp'),
 
 var assetsDir = './src/Resources/',
     srcDir    = './src/',
+    dataDir   = './data/',
     distDir   = './dist/',
     publicDir = './src/Resources/public',
     vendors   = [
@@ -72,7 +73,10 @@ gulp.task('html', shell.task([
 gulp.task('watch', ['dev'], function () {
     gulp.watch(assetsDir + 'js/**/*.js', ['js-hint', 'js-full']);
     gulp.watch(assetsDir + 'css/**/*.scss', ['css']);
-    gulp.watch([srcDir + '**/*.php', srcDir + '**/*.twig', srcDir + '**/*.yml'], ['html']);
+    gulp.watch([
+        dataDir + '**/*',
+        srcDir + '**/*'
+    ], ['html']);
 });
 
 gulp.task('dev', ['public', 'css', 'js-full', 'html']);
