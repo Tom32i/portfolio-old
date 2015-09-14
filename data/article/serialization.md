@@ -1,6 +1,6 @@
 ---
-date: "2015-08-27"
-tags: []
+date: "2015-09-14"
+tags: ["Symfony", "Serialization"]
 title: "Better serialization with Symfony"
 description: "How to write strong and clean Serialization process with Symfony2 and why you should."
 ---
@@ -13,7 +13,7 @@ But after using it in several projects, I'm not totally happy with it.
 I've encountered small problems, mostly __assumptions that don't fit my needs__ and __can't be overrided or redefined easily__.
 Wich makes them deal-breakers in my opinion.
 
-The solution may be fine fine for big backends and API where you just want to have your entities serialized "automatically".
+The solution may be fine for big backends and API where you just want to have your entities serialized "automatically".
 
 However, if you're working on specific domain logic for small/medium projects (as I mostly do), you might want to look more flexible solutions.
 
@@ -21,46 +21,36 @@ But you know what?
 
 ## Symfony has a great serialization component!
 
-When I find myself struggling with a third-party component that is supposed to solve a problem for me, I often ask myself:
+Symfony already addressed the problem of content serialization with the __Serializer Component__.
 
-> What would Symfony do?
+It is not as _ready to use_ as JMS Serializer but it is __extendable__ and __flexible__.
 
-Is this case, Symfony already addressed the problem of content serialization with the __Serializer Component__.
-
-In the Symfony serialization component, a serializer is composed of two half:
+_Quick reminder_: In the Symfony serialization component, a serializer is composed of two half:
 
 - The __Normalizer__: responsible for transforming the source object into an array (_normalize/denormalize_).
 - The __Encoder__: responsible for transforming the normalised data into a formatted string (_encode/decode_).
-
-[![](http://symfony.com/doc/current/_images/serializer_workflow.png)](http://symfony.com/doc/current/components/serializer.html)
 
 You can provide the serializer with several normalizers and encoders so it can handle more serialization cases.
 
 Before going further, I recommend that you refresh your memory with [the documentation](http://symfony.com/doc/current/components/serializer.html) if you're not familiar with this component.
 
-### Your domain logic lies into the Normalizer
+### Your domain logic lies into the normalizer
 
-The Serializer component povide you with several encoders (notably for _JSON_ and _YML_) but you could write an encoder for any format you need: _CSV_, _YAML_,...
+The Serializer component is shiped with several encoders (notably _JSON_ and _YML_ encoders) but you could write quick easily an encoder for any format you need: _CSV_, _YAML_,...
 
-But the heart of the problem of Serialization is to transform your object into array (a.k.a the normalization), that's what you do in JMS when you write annotations to tell which property should be included and how.
+But the heart of the problem of serialization is to transform your object into array (a.k.a the normalization), that's what you do in JMS when you write annotations to tell which property should be included and how.
 
 _That's where the value is, so that's where you want to put your time and efforts._
 
-> Need to serialize a specific entity in a specific way?
-Declare a Normalizer that support this single model!
+> Need to serialize a specific object in a specific way?
+Declare a normalizer that support this single model!
 
-You will have access to the entity and __all the power of a service__:
-
-- Call a third-party service for information (database, webservice, ...)
-- Serialize all the objects, not just entities (did you ever needed _form errors_ in JSON?)
-- Have several serializers handle different needs in your app for the same model
-
-To write a custom normalizer, you need to implements NormalizerInterface, wich describes two methods:
+To write a custom normalizer, you need to implements `NormalizerInterface`, wich describes two methods:
 
 - __supportsNormalization__: Answer the question "Can you normalize that object?".
 - __normalize__: Do the transformation from object into array.
 
-Here's an exemple:
+Here's an example:
 
 ``` php
 <?php
@@ -103,7 +93,9 @@ class UserNormalizer implements NormalizerInterface
 }
 ```
 
-The result of the normalization:
+_Note:_ You are free to add some logic/complexity here, you've separated the _model_ from the _serialization of the model_. Hurrah for decoupling \o/
+
+The result of the normalization would be:
 
 ``` php
 <?php
@@ -114,15 +106,13 @@ The result of the normalization:
 ]
 ```
 
-You are free to add some complexity here, you've separated the _model_ from the _serialization of the model_. Hurrah for decoupling \o/
-
 ### Handling object associations
 
-When normalizing an object, you might encouter relations to other objects that the Normalizer doesn't support. The `SerializerAwareNormalizer` is here to help you:
+When normalizing an object, you might encouter relations to other objects that the normalizer doesn't support. The `SerializerAwareNormalizer` is here to help you:
 
-When your normalizer exends the `SerializerAwareNormalizer`, it will recieve the parent Serializer as a dependence. So you can send back the normalization of other objects back to the serializer (which may have other Normalizers for that object you can't normalize).
+When your normalizer extends the `SerializerAwareNormalizer`, it will receive the parent serializer as a dependence. So you can entrust the normalization of an other object back to the serializer (which may have other normalizers for that object).
 
-Here's an exemple:
+Let's updated our previous example:
 
 ``` php
 <?php
@@ -155,7 +145,7 @@ class UserNormalizer extends SerializerAwareNormalizer implements NormalizerInte
 }
 ```
 
-All you need to do now is to write a Normalizer that support `Group` objects!
+All you need to do now is to write a normalizer that support `Group` objects!
 
 ``` php
 <?php
@@ -208,9 +198,12 @@ The result of the normalization:
     ],
 ]
 ```
+
+_Note:_ In the `supportsNormalization` method, you could very well say that you handle a specific `interface` instead of a single object. Making it a normalizer that handles all models that behave a certain way.
+
 ### The context
 
-The Serializer component offers a `$context` variable that is passed on throught the whole serialization process.
+The Serializer Component offers a `$context` variable that is passed on throught the whole serialization process.
 
 You can use it to store any information that your normalizer would need and affect their behavior.
 
@@ -249,11 +242,22 @@ class UserNormalizer extends SerializerAwareNormalizer implements NormalizerInte
 }
 ```
 
-Can you see how our Serializer is getting flexible and powerfull?
+Can you see how our serializer is getting flexible and powerfull?
 
-### The Serializer(s) as service(s)
+Here's a few more custom normalizers example I wrote for a REST API:
 
-Declare a service for each of the encoders you will need:
+- __[Doctrine's Collection](https://gist.github.com/Tom32i/773de875f92322925bd3#file-collectionnormalizer-php)__: Similar to what we did with groups an the example above.
+- __[DateTime](https://gist.github.com/Tom32i/773de875f92322925bd3#file-datetimenormalizer-php)__: The one class in my app responsible for formating Dates for the API.
+- __[Form Error](https://gist.github.com/Tom32i/773de875f92322925bd3#file-formerrornormalizer-php)__: returns a simple array with field names as keys and error messages as values.
+
+You might also want to extends the [`ObjectNormalizer`](https://github.com/symfony/Serializer/blob/4d03a053097b926694a878fcd4b3f230dca56717/Normalizer/ObjectNormalizer.php) shipped with Symfony Serializer component. It loops over the properties of the object to serialize and forward all non-scalar values back to the serializer (wich makes it works with your custom normalizers!). However it make no assumptions about how circular references should be treated, so it requires a little work. But that would be a topic for another article.
+
+## The Serializer(s) as service(s)
+
+Once you have all the normalizers you need, it can be useful to declare them as services.
+Giving these normalizers access to __all the power of a service__, like injecting dependencies that you can ask for extra information when normalizing a model (database, webservice, file sytem, ...).
+
+To do so, declare a service for each of the encoders you will need:
 
 ``` yaml
 services:
@@ -279,20 +283,35 @@ services:
         class: 'Acme\Serializer\Normalizer\GroupNormalizer'
 ```
 
-Compose as many serializers as you need with different normalizers:
+Finally, compose as many serializers as you need with different normalizers and encoders:
 
 ``` yaml
 services:
     # Serializer
-    acme.serializer:
+    acme.serializer.default:
         class: 'Symfony\Component\Serializer\Serializer'
         arguments:
             0:
                 - '@acme.normalizer.user'
                 - '@acme.normalizer.group'
+                - '@serializer.normalizer.object'
             1:
                 - '@acme.encoder.json'
                 - '@acme.encoder.xml'
 ```
 
-_Note:_ If you [enabled the serializer services](http://symfony.com/doc/current/cookbook/serializer.html), as I did here, you can use the `serializer.normalizer.object` service as a fallback normalizer for all object that you din't specifically handled with a custom normalizer.
+_Note:_ If you [enabled the serializer services](http://symfony.com/doc/current/cookbook/serializer.html), as I did here, you can use the `serializer.normalizer.object` service as a fallback normalizer for all objects that you didn't specifically handled with a custom normalizer.
+
+## The benefits:
+
+Structuring your serializer this way, you have a very modular and flexible system:
+
+__Flexibility__: by creating your own normalizers, you don't have to conform to a structure imposed by a library. Just write the code that does what your project needs.
+
+__Testability__: normalizers are testable PHP classes, you can unit test the result of normalization.
+
+__Separation of concerns__: different parts of your application may need to serialize the same object in different ways. It's their role to know how, not the object itself: that means no more complicated sets of groups in the object annotations.
+
+__Performance__: Symfony Serializer with custom normalizers performs _3 times faster_ in my experience.
+
+

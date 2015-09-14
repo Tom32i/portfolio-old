@@ -82,4 +82,20 @@ class Parsedown extends BaseParsedown
 
         return substr($Block['element']['text']['attributes']['class'], strlen('language-'));
     }
+
+    /**
+     * Process link
+     *
+     * @param array $Excerpt
+     *
+     * @return array
+     */
+    protected function inlineLink($Excerpt)
+    {
+        $data = parent::inlineLink($Excerpt);
+
+        $data['element']['attributes']['target'] = '_blank';
+
+        return $data;
+    }
 }
