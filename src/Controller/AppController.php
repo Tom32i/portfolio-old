@@ -30,7 +30,7 @@ class AppController
             'agencies'  => $content->getContents('agency', 'slug'),
             'projects'  => $content->getContents('project', 'date', false),
             'badges'    => $content->getContents('badge', 'weight'),
-            'tools'     => $content->getContents('tool'),
+            'tools'     => $content->getContents('tool', 'weight'),
             'links'     => $content->getContents('link', 'weight'),
         ]);
     }

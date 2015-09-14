@@ -38,14 +38,14 @@ class BlogController
      *
      * @param Request $request
      * @param Application $app
-     * @param string $article
+     * @param array $article
      *
      * @return Response
      */
-    public function article(Request $request, Application $app, $article)
+    public function article(Request $request, Application $app, array $article)
     {
         return $app['twig']->render('blog/article.html.twig', [
-            'article' => $app['content_repository']->getContent('article', $article),
+            'article' => $article,
             'latest'  => $app['content_repository']->getContents('article', 'date', false, 5),
         ]);
     }

@@ -312,6 +312,6 @@ __Testability__: normalizers are testable PHP classes, you can unit test the res
 
 __Separation of concerns__: different parts of your application may need to serialize the same object in different ways. It's their role to know how, not the object itself: that means no more complicated sets of groups in the object annotations.
 
-__Performance__: Symfony Serializer with custom normalizers performs _3 times faster_ in my experience.
+__Performance__: Symfony Serializer with custom normalizers performs _3 times faster_ than JMS Serializer in my experience.
 
 

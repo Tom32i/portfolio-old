@@ -86,4 +86,20 @@
             }
         }
     }
+
+    .tldr {
+        font-style: italic;
+        background: white;
+        font-size: 1.4em;
+        padding: $gutter/4;
+
+        p {
+            margin: 0;
+        }
+
+        .title {
+            font-weight: $font-bold;
+            margin-right: $gutter/4;
+        }
+    }
 }

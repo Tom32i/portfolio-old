@@ -25,7 +25,10 @@ class ControllerServiceProvider implements ServiceProviderInterface
 
         $app->get('/blog/{article}', 'Tom32i\\Portfolio\\Controller\\BlogController::article')
             ->content('article')
-            ->bind('article');
+            ->bind('article')
+            ->convert('article', function ($article)  use ($app) {
+                return $app['content_repository']->getContent('article', $article);
+            });
     }
 
     /**

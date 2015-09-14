@@ -22,6 +22,7 @@
         "symfony/twig-bridge": "~2.7",
         "symfony/dependency-injection": "^2.7",
         "erusev/parsedown": "^1.5",
-        "symfony/process": "^2.7"
+        "symfony/process": "^2.7",
+        "deralex/yaml-config-service-provider": "^1.0"
     }
 }

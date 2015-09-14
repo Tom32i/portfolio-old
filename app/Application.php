@@ -1,16 +1,15 @@
 <?php
 
-
 namespace Tom32i\Phpillip;
 
+use DerAlex\Silex\YamlConfigServiceProvider;
 use Silex\Application as BaseApplication;
-use Silex\Provider as Provider;
+use Silex\Provider as SilexProvider;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpFoundation\Request;
-use Tom32i\Phpillip\Provider\ContentServiceProvider;
-use Tom32i\Phpillip\Provider\ControllerServiceProvider;
+use Tom32i\Phpillip\Provider as PhpillipProvider;
 
 /**
  * App Kernel
@@ -31,24 +30,20 @@ final class Application extends BaseApplication
             'route_class' => 'Tom32i\Phpillip\Routing\Route',
         ]);
 
-        $this->register(new Provider\TwigServiceProvider(), [
-            'twig.path' => $this['root'] . '/src/Resources/views'
-        ]);
+        $this->register(new YamlConfigServiceProvider($this['root'] . '/app/Resources/config/config.yml'));
+        $this->register(new SilexProvider\TwigServiceProvider(), ['twig.path' => $this['root'] . '/src/Resources/views']);
+        $this->register(new SilexProvider\UrlGeneratorServiceProvider());
+        $this->register(new PhpillipProvider\ContentServiceProvider());
+        $this->register(new PhpillipProvider\ControllerServiceProvider());
+        $this->register(new PhpillipProvider\TwigExtensionServiceProvider());
+        $this->register(new PhpillipProvider\InformatorServiceProvider());
+        //$this->register(new MetaServiceProvider());
 
-        $this->register(new Provider\UrlGeneratorServiceProvider());
-        $this->register(new ContentServiceProvider());
-        $this->register(new ControllerServiceProvider());
-    }
+        # http://silex.sensiolabs.org/doc/usage.html#error-handlers
 
-    /**
-     * Run
-     */
-    public function run(Request $request = null)
-    {
-        if (!$this['debug']) {
-            return $this['http_cache']->run($request);
-        }
+        #request_context
 
-        return parent::run($request);
+        #https://github.com/silexphp/Silex/wiki/Third-Party-ServiceProviders#config
+        #https://github.com/silexphp/Silex/wiki/Third-Party-ServiceProviders#text-formatting
     }
 }

@@ -1,5 +1,12 @@
 {% extends 'layout.html.twig' %}
 
+{% import 'block/card.html.twig' as card %}
+
+{% block meta %}
+    {{ parent() }}
+    {{ card.twitter(parameters.meta.title, parameters.meta.description) }}
+{% endblock %}
+
 {% block content %}
     <hr class="icon-anchor">
 

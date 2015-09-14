@@ -6,25 +6,18 @@
             <meta http-equiv="x-ua-compatible" content="ie=edge">
             <meta name="viewport" content="width=device-width, initial-scale=1">
 
-            <title>{% block title (title is defined ? title ~ '|' : '') ~ app.title|default('Thomas Jarrand') %}</title>
+            <title>{% block meta_title title|default(parameters.meta.title) %}</title>
 
-            <meta name="author" content="{{ app.author|default('Thomas Jarrand') }}">
-            <meta name="description" content="{{ app.description|default('Thomas Jarrand') }}">
-            <meta name="keywords" content="{{ app.keyswords|default([])|join(' ') }}">
+            <meta name="author" content="{{ parameters.meta.author }}">
+            <meta name="description" content="{% block meta_description description|default(parameters.meta.description) %}">
 
-            <meta property="og:title" content="{{ title|default('') }}">
-            <meta property="og:description" name="description" content="{{ app.description|default('Thomas Jarrand') }}">
-            <meta property="og:url" content="{{ app.request.uri }}">
-            <meta property="og:site_name" content="{{  app.title|default('Thomas Jarrand') }}">
-
-            <meta name="twitter:site" content="{{ app.twitter|default('@tom32i') }}" >
-
-            <link rel="canonical" href="{{ app.request.uri }}">
+            <link rel="canonical" href="{{ canonical }}">
         {% endblock %}
 
         {% block stylesheet %}
             <link rel="stylesheet" href="/css/style.css">
-            <link rel="shortcut icon" href="/favicon.ico">
+            <link rel="icon" href="/favicon.ico">
+            <link rel="shortcut" href="/favicon.ico">
             <link rel="apple-touch-icon" href="/apple-touch-icon.png">
         {% endblock %}
 
@@ -34,6 +27,12 @@
     </head>
     <body class="{% block body_class '' %}">
         {% block body %}{% endblock %}
-        {% block analytics include('block/analytics.html.twig') %}
+
+        {% block analytics %}
+            {% import 'block/analytics.html.twig' as analytics %}
+            {% if app.environment == 'prod' %}
+                {{ analytics.tracker(parameters.analytics) }}
+            {% endif %}
+        {% endblock %}
     </body>
 </html>

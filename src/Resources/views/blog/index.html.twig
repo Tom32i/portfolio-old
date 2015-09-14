@@ -1,7 +1,7 @@
-{% extends 'layout.html.twig' %}
+{% extends 'blog/layout.html.twig' %}
 
-{% block body_class 'blog' %}
-{% block home_link path('blog') %}
+{% set title       = parameters.blog.meta.title %}
+{% set description = parameters.blog.meta.description %}
 
 {% block content %}
     <hr class="icon-pen">

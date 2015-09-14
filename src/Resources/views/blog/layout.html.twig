@@ -1,0 +1,11 @@
+{% extends 'layout.html.twig' %}
+
+{% import 'block/card.html.twig' as card %}
+
+{% block body_class 'blog' %}
+{% block home_link path('blog') %}
+
+{% block meta %}
+    {{ parent() }}
+    {{ card.twitter(title, description) }}
+{% endblock %}
