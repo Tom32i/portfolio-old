@@ -1,5 +1,5 @@
 {%- if link.url -%}
-    <a href="{{ link.url }}" class="link" target="_blank" title="{{ link.name }}">
+    <a href="{{ link.url }}" class="link" {{ link.local|default(false) ? '' : 'target="_blank"' }} title="{{ link.name }}">
         <span class="icon-{{ link.icon }} {{ link.color }}"></span>
         {{ link.name }}
     </a>

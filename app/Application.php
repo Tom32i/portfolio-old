@@ -26,7 +26,7 @@ final class Application extends BaseApplication
     {
         parent::__construct([
             'root'        => $values['root'],
-            'environment' => $values['env'] ?: 'production',
+            'environment' => $values['env'] ?: 'dev',
             'debug'       => $values['debug'] ?: false,
             'route_class' => 'Tom32i\Phpillip\Routing\Route',
         ]);

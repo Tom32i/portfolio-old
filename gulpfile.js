@@ -67,7 +67,7 @@ gulp.task('public', function() {
 });
 
 gulp.task('html', shell.task([
-    'bin/console portfolio:build thomas.jarrand.fr',
+    'bin/console portfolio:build',
 ]));
 
 gulp.task('watch', ['dev'], function () {
@@ -80,4 +80,4 @@ gulp.task('watch', ['dev'], function () {
 });
 
 gulp.task('dev', ['public', 'css', 'js-full', 'html']);
-gulp.task('default', ['public', 'css', 'js-min', 'html']);
+gulp.task('default', ['public', 'css', 'js-min']);

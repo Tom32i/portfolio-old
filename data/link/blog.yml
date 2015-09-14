@@ -3,3 +3,4 @@ url:    "/blog"
 name:   "Blog"
 color:  orange
 weight: 2
+local:  true
