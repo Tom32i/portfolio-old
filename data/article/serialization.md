@@ -1,5 +1,5 @@
 ---
-date: "2015-09-14 11:00:00"
+date: "2015-09-15 10:00:00"
 tags: ["Symfony", "Serialization"]
 title: "Better serialization with Symfony"
 description: "How to write strong and clean Serialization process with Symfony2 and why you should."
