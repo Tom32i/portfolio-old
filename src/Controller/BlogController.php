@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Tom32i\Phpillip\Service\Paginator;
 
-
 /**
  * Blog Controller
  */
@@ -24,13 +23,15 @@ class BlogController
     public function index(Request $request, Application $app, $page = 1)
     {
         $paginator = new Paginator($app['content_repository']->getContents('article', 'date', false));
-
-        return $app['twig']->render('blog/index.html.twig', [
-            'articles' => $paginator->get($page),
+        $articles  = $paginator->get($page);
+        $content   = $app['twig']->render('blog/index.html.twig', [
+            'articles' => $articles,
             'pages'    => $paginator->count(),
             'page'     => $page,
             'latest'   => $app['content_repository']->getContents('article', 'date', false, 5),
         ]);
+
+        return new Response($content, 200, ['Last-Modified' => $articles[0]['lastModified']]);
     }
 
     /**
@@ -44,9 +45,11 @@ class BlogController
      */
     public function article(Request $request, Application $app, array $article)
     {
-        return $app['twig']->render('blog/article.html.twig', [
+        $content = $app['twig']->render('blog/article.html.twig', [
             'article' => $article,
             'latest'  => $app['content_repository']->getContents('article', 'date', false, 5),
         ]);
+
+        return new Response($content, 200, ['Last-Modified' => $article['lastModified']]);
     }
 }

@@ -25,6 +25,16 @@ h2 {
         line-height: 1.4em;
         font-size: 1.2em;
     }
+
+    pre, img {
+        margin-left: -$gutter/2;
+        margin-right: -$gutter/2;
+    }
+
+    .highlight {
+        padding-left: $gutter;
+        padding-right: $gutter;
+    }
 }
 
 .tools .tool {

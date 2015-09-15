@@ -45,5 +45,7 @@ final class Application extends BaseApplication
 
         #https://github.com/silexphp/Silex/wiki/Third-Party-ServiceProviders#config
         #https://github.com/silexphp/Silex/wiki/Third-Party-ServiceProviders#text-formatting
+
+        $this['twig.loader.filesystem']->addPath($this['root'] . '/app/Resources/views', 'phpillip');
     }
 }

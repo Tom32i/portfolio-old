@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Tom32i\Phpillip\Console\Service\ContentProvider;
 use Tom32i\Phpillip\Console\Utils\Logger;
+use Tom32i\Phpillip\Model\Sitemap;
 use Tom32i\Phpillip\Routing\Route;
 use Tom32i\Phpillip\Service\Paginator;
 
@@ -56,6 +57,13 @@ class BuildCommand extends Command
     private $host;
 
     /**
+     * Sitemap
+     *
+     * @var Sitemap
+     */
+    private $sitemap;
+
+    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -79,6 +87,7 @@ class BuildCommand extends Command
         $this->app          = $this->getApplication()->getKernel();
         $this->files        = new Filesystem();
         $this->logger       = new Logger($output);
+        $this->sitemap      = new Sitemap();
         $this->content      = $this->app['content_repository'];
         $this->urlGenerator = $this->app['url_generator'];
         $this->destination  = $this->app['root'] . '/dist';
@@ -98,6 +107,8 @@ class BuildCommand extends Command
         foreach ($this->app['routes'] as $name => $route) {
             $this->dump($name, $route);
         }
+
+        $this->buildSitemap();
     }
 
     /**
@@ -181,9 +192,8 @@ class BuildCommand extends Command
      */
     private function build($name, Route $route, array $parameters = [])
     {
-        $parameters = array_merge($route->compile()->getVariables(), $parameters);
-        $content    = $this->call($name, $route, $parameters);
-        $path       = '/' . trim($route->getPath(), '/');
+        $content = $this->call($name, $route, $parameters);
+        $path    = '/' . trim($route->getPath(), '/');
 
         foreach ($route->getDefaults() as $key => $value) {
             if (isset($parameters[$key]) && $parameters[$key] == $value) {
@@ -201,6 +211,16 @@ class BuildCommand extends Command
     }
 
     /**
+     * Build sitemap
+     */
+    private function buildSitemap()
+    {
+        $sitemap = $this->app['twig']->render('@phpillip/sitemap.xml.twig', ['sitemap' => $this->sitemap]);
+
+        $this->write($this->destination, $sitemap, 'sitemap.xml');
+    }
+
+    /**
      * Call a route and return its response content
      *
      * @param Route $route
@@ -209,10 +229,11 @@ class BuildCommand extends Command
      */
     private function call($name, Route $route, array $parameters = [])
     {
-        $referenceType = $this->host ? UrlGeneratorInterface::ABSOLUTE_URL : UrlGeneratorInterface::ABSOLUTE_PATH;
-        $url           = $this->urlGenerator->generate($name, $parameters, $referenceType);
-        $request       = Request::create($url, 'GET', $parameters);
-        $response      = $this->app->handle($request);
+        $url      = $this->urlGenerator->generate($name, $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
+        $request  = Request::create($url, 'GET', $parameters);
+        $response = $this->app->handle($request);
+
+        $this->sitemap->add($url, $response->headers->get('Last-Modified'));
 
         return $response->getContent();
     }

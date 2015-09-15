@@ -229,6 +229,11 @@ class ContentRepository
             $data['slug'] = $this->getName($file);
         }
 
+        if (!isset($data['lastModified'])) {
+            $data['lastModified'] = new DateTime();
+            $data['lastModified']->setTimestamp($file->getMTime());
+        }
+
         if (isset($data['weight'])) {
             $data['weight'] = intval($data['weight']);
         }

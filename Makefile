@@ -56,4 +56,4 @@ publish:
 	rm -rf dist
 	vagrant ssh -c 'cd /srv/app && make build && bin/console portfolio:build -e=prod thomas.jarrand.fr'
 	chmod -R 755 dist
-	rsync -arzv --delete dist/* dédié:/home/tom32i/sites/blog
+	rsync -arzv --delete dist/* dédié:/home/tom32i/sites/portfolio

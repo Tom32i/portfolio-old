@@ -17,4 +17,6 @@ window.onload = function () {
     if (disqus) {
         new DisqusLoader(disqus);
     }
+
+    new Loader();
 };
