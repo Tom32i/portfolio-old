@@ -14,8 +14,6 @@ function DisqusLoader(element)
     this.load = this.load.bind(this);
 
     this.element.addEventListener('click', this.load);
-
-    console.log(this.element);
 }
 
 /**
@@ -39,7 +37,6 @@ DisqusLoader.prototype.getScript = function()
  */
 DisqusLoader.prototype.load = function()
 {
-    console.log('load', typeof(disqus_shortname));
     if (typeof(disqus_shortname) !== 'undefined') {
         return;
     }
