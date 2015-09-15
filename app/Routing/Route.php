@@ -17,6 +17,20 @@ class Route extends BaseRoute
     private $content;
 
     /**
+     * Filename
+     *
+     * @var string
+     */
+    private $filename = 'index';
+
+    /**
+     * On sitemap
+     *
+     * @var boolean
+     */
+    private $onSitemap = true;
+
+    /**
      * Content
      *
      * @param string $content
@@ -75,5 +89,69 @@ class Route extends BaseRoute
     public function isPaginated()
     {
         return $this->hasDefault('page');
+    }
+
+    /**
+     * Hide from sitemap
+     *
+     * @return Route
+     */
+    public function hideFromSitemap()
+    {
+        $this->onSitemap = false;
+
+        return $this;
+    }
+
+    /**
+     * Is route on sitemap
+     *
+     * @return boolean
+     */
+    public function isOnSitemap()
+    {
+        return $this->onSitemap;
+    }
+
+    /**
+     * Set filename
+     *
+     * @param string $filename
+     *
+     * @return Route
+     */
+    public function setFilename($filename)
+    {
+        $this->filename = $filename;
+
+        return $this;
+    }
+
+    /**
+     * Get filename
+     *
+     * @return string
+     */
+    public function getFilename()
+    {
+        return $this->filename;
+    }
+
+    /**
+     * Set RSS
+     *
+     * @return Route
+     */
+    public function rss()
+    {
+        $this
+            ->setFilename('feed')
+            ->hideFromSitemap()
+            ->setDefault('_format', 'rss')
+            ->setRequirement('_format', 'rss');
+
+        var_dump($this);
+
+        return $this;
     }
 }

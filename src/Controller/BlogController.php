@@ -5,6 +5,7 @@ namespace Tom32i\Portfolio\Controller;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Tom32i\Phpillip\Service\Paginator;
 
 /**
@@ -17,6 +18,7 @@ class BlogController
      *
      * @param Request $request
      * @param Application $app
+     * @param integer $page
      *
      * @return Response
      */
@@ -51,5 +53,43 @@ class BlogController
         ]);
 
         return new Response($content, 200, ['Last-Modified' => $article['lastModified']]);
+    }
+
+    /**
+     * RSS
+     *
+     * @param Request $request
+     * @param Application $app
+     *
+     * @return Response
+     */
+    public function rss(Request $request, Application $app)
+    {
+        var_dump('RSS');
+        $items = array_map(
+            function ($article) use ($app){
+                return [
+                    'title'       => $article['title'],
+                    'description' => $article['description'],
+                    'guid'        => $article['slug'],
+                    'pubDate'     => $article['date'],
+                    'link'        => $app['url_generator']->generate(
+                        'article',
+                        ['article' => $article['slug']],
+                        UrlGeneratorInterface::ABSOLUTE_URL
+                    )
+                ];
+            },
+            $app['content_repository']->getContents('article', 'date', false)
+        );
+
+        $content = $app['twig']->render('@phpillip/rss.xml.twig', [
+            'title'       => $app['config']['parameters']['meta']['blog']['title'],
+            'description' => $app['config']['parameters']['meta']['blog']['description'],
+            'webmaster'   => 'thomas.jarrand@gmail.com',
+            'items'       => $items,
+        ]);
+
+        return new Response($content, 200, ['Content-Type' => 'application/rss+xml']);
     }
 }

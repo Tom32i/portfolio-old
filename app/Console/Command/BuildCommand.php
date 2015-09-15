@@ -192,8 +192,16 @@ class BuildCommand extends Command
      */
     private function build($name, Route $route, array $parameters = [])
     {
-        $content = $this->call($name, $route, $parameters);
-        $path    = '/' . trim($route->getPath(), '/');
+        $path     = '/' . trim($route->getPath(), '/');
+        $url      = $this->urlGenerator->generate($name, $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
+        $format   = $route->getDefault('_format') ?: 'html';
+        $filename = $route->getFilename();
+        $request  = Request::create($url, 'GET', array_merge($parameters, ['_format' => $format]));
+        $response = $this->app->handle($request);
+
+        if ($route->isOnSitemap()) {
+            $this->sitemap->add($url, $response->headers->get('Last-Modified'));
+        }
 
         foreach ($route->getDefaults() as $key => $value) {
             if (isset($parameters[$key]) && $parameters[$key] == $value) {
@@ -205,7 +213,7 @@ class BuildCommand extends Command
             $path = str_replace(sprintf('{%s}', $key), (string) $value, $path);
         }
 
-        $this->write($this->destination . $path, $content);
+        $this->write($this->destination . $path, $response->getContent(), $format, $filename);
 
         $this->logger->log(sprintf('    Build path <comment>%s</comment>', $path));
     }
@@ -215,27 +223,11 @@ class BuildCommand extends Command
      */
     private function buildSitemap()
     {
+        $this->logger->log(sprintf('Building sitemap with <comment>%s</comment> urls.', count($this->sitemap)));
+
         $sitemap = $this->app['twig']->render('@phpillip/sitemap.xml.twig', ['sitemap' => $this->sitemap]);
 
-        $this->write($this->destination, $sitemap, 'sitemap.xml');
-    }
-
-    /**
-     * Call a route and return its response content
-     *
-     * @param Route $route
-     *
-     * @return string
-     */
-    private function call($name, Route $route, array $parameters = [])
-    {
-        $url      = $this->urlGenerator->generate($name, $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
-        $request  = Request::create($url, 'GET', $parameters);
-        $response = $this->app->handle($request);
-
-        $this->sitemap->add($url, $response->headers->get('Last-Modified'));
-
-        return $response->getContent();
+        $this->write($this->destination, $sitemap, 'xml', 'sitemap');
     }
 
     /**
@@ -244,12 +236,12 @@ class BuildCommand extends Command
      * @param string $path
      * @param string $content
      */
-    private function write($path, $content, $filename = 'index.html')
+    private function write($path, $content, $format = 'html', $filename = 'index')
     {
         if (!$this->files->exists($path)) {
             $this->files->mkdir($path);
         }
 
-        $this->files->dumpFile(rtrim($path, '/') . '/' . $filename, $content);
+        $this->files->dumpFile(sprintf('%s/%s.%s', rtrim($path, '/'), $filename, $format), $content);
     }
 }

@@ -18,9 +18,11 @@ class ControllerServiceProvider implements ServiceProviderInterface
         $app->get('/', 'Tom32i\\Portfolio\\Controller\\AppController::index')
             ->bind('homepage');
 
-        $test = $app->get('/blog', 'Tom32i\\Portfolio\\Controller\\BlogController::index')
+        $app->get('/blog', 'Tom32i\\Portfolio\\Controller\\BlogController::index')
             ->content('article')
             ->paginate()
+            ->setDefault('_format', 'html')
+            ->setRequirement('_format', 'html')
             ->bind('blog');
 
         $app->get('/blog/{article}', 'Tom32i\\Portfolio\\Controller\\BlogController::article')
@@ -29,6 +31,11 @@ class ControllerServiceProvider implements ServiceProviderInterface
             ->convert('article', function ($article)  use ($app) {
                 return $app['content_repository']->getContent('article', $article);
             });
+
+        $app->get('/blog/', 'Tom32i\\Portfolio\\Controller\\BlogController::rss')
+            ->content('article')
+            ->rss()
+            ->bind('blog_rss');
     }
 
     /**

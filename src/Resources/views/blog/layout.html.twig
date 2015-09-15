@@ -7,6 +7,7 @@
 {% block meta %}
     {{ parent() }}
     {{ card.twitter(title, description) }}
+    <link title="{{ parameters.meta.blog.title }}" href="{{ url('blog_rss') }}feed.rss"type="application/rss+xml" rel="alternate"/>
 {% endblock %}
 
 {% block header %}

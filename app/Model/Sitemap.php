@@ -3,11 +3,12 @@
 namespace Tom32i\Phpillip\Model;
 
 use Iterator;
+use Countable;
 
 /**
  * Sitemap
  */
-class Sitemap implements Iterator
+class Sitemap implements Iterator, Countable
 {
     /**
      * Urls
@@ -92,5 +93,13 @@ class Sitemap implements Iterator
     public function valid()
     {
         return isset($this->urls[$this->position]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count()
+    {
+        return count($this->urls);
     }
 }
