@@ -2,16 +2,16 @@ parameters:
     meta:
         author: Thomas Jarrand
         twitter: @tom32i
+
         title: Thomas Jarrand - French Web Developer
         description: |
             My name is Thomas Jarrand, I'm a 25 years old fullstack developer.
             I'm also a SensioLabs Certified Symfony2 Expert.
 
-    blog:
-        meta:
-            title: Thomas Jarrand's Tech Blog
+        blog:
+            title: Thomas Jarrand - Web Tech Diary
             description: |
                 My name is Thomas Jarrand, I'm a 25 years old fullstack developer.
-                This is my technical blog.
+                This is my technical blog, I write about web technologies I work with.
 
     analytics: 'UA-7324372-6'

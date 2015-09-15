@@ -2,7 +2,7 @@
 
 {% import 'block/date.html.twig' as date %}
 
-{% set title       = article.title  ~ ' | ' ~ parameters.blog.meta.title %}
+{% set title       = article.title  ~ ' - ' ~ parameters.meta.blog.title %}
 {% set description = article.description %}
 
 {% block content %}
@@ -17,8 +17,9 @@
         <div class="content">
             {{ article.content|raw }}
         </div>
-        <footer>
+        <footer class="footer">
             <hr class="icon-talk">
+            <h1>THANK YOU FOR READING!</h1>
             <div
                 id="disqus_thread"
                 data-shortname="thomas-jarrand-tech-blog"
@@ -31,9 +32,4 @@
             </div>
         </footer>
     </article>
-{% endblock %}
-
-{% block footer %}
-    <h1>THANK YOU FOR READING!</h1>
-    {{ include('blog/footer.html.twig') }}
 {% endblock %}

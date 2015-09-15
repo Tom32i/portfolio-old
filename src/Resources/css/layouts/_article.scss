@@ -87,19 +87,33 @@
         }
     }
 
-    .tldr {
-        font-style: italic;
-        background: white;
-        font-size: 1.4em;
-        padding: $gutter/4;
+    .footer {
+        text-align: center;
 
-        p {
-            margin: 0;
+        h1 {
+            font-size: 1.8em;
+            font-weight: $font-light;
+            line-height: 1em;
+            text-align: center;
         }
 
-        .title {
-            font-weight: $font-bold;
-            margin-right: $gutter/4;
+        .comments {
+            text-align: center;
+            margin: $gutter 0;
+
+            .enable {
+                border-radius: 4px;
+                text-align: center;
+                background-color: $grey;
+                color: $white;
+                border: none;
+                padding: $gutter/4 $gutter/2;
+
+                &:hover {
+                    background-color: $black;
+                }
+            }
         }
+
     }
 }

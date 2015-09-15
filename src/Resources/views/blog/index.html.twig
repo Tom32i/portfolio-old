@@ -1,7 +1,7 @@
 {% extends 'blog/layout.html.twig' %}
 
-{% set title       = parameters.blog.meta.title %}
-{% set description = parameters.blog.meta.description %}
+{% set title       = parameters.meta.blog.title %}
+{% set description = parameters.meta.blog.description %}
 
 {% block content %}
     <hr class="icon-pen">
@@ -13,9 +13,4 @@
     {% embed 'block/pagination.html.twig' %}
         {% set route = 'blog' %}
     {% endembed %}
-{% endblock %}
-
-{% block footer %}
-    <h1>THOMAS JARRAND'S TECH BLOG</h1>
-    {{ include('blog/footer.html.twig') }}
 {% endblock %}

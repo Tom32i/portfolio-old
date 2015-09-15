@@ -3,9 +3,21 @@
 {% import 'block/card.html.twig' as card %}
 
 {% block body_class 'blog' %}
-{% block home_link path('blog') %}
 
 {% block meta %}
     {{ parent() }}
     {{ card.twitter(title, description) }}
+{% endblock %}
+
+{% block header %}
+    <header class="site-title container">
+        <a href="{{ path('blog') }}">
+            THOMAS <strong>JARRAND</strong>
+            <span class="sub-title">WEB TECH DIARY</span>
+        </a>
+    </header>
+{% endblock %}
+
+{% block footer %}
+    {{ include('blog/footer.html.twig') }}
 {% endblock %}
