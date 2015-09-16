@@ -43,6 +43,13 @@ class ContentRepository
     private $root;
 
     /**
+     * Cache
+     *
+     * @var array
+     */
+    private $cache;
+
+    /**
      * Constructor
      *
      * @param DecoderInterface $decoder
@@ -54,6 +61,10 @@ class ContentRepository
         $this->decoder = $decoder;
         $this->root    = rtrim($root, '/') . '/' . trim($contentDir, '/');
         $this->files   = new FileSystem();
+        $this->cache   = [
+            'files'    => [],
+            'contents' => [],
+        ];
     }
 
     /**
@@ -67,15 +78,10 @@ class ContentRepository
      */
     public function getContents($type, $indexBy = null, $order = true)
     {
-        $path = sprintf('%s/%s', $this->root, $type);
-
-        if (!$this->files->exists($path)) {
-            throw new Exception(sprintf('No content directory find for type "%s".', $type), 1);
-        }
-
         $contents = [];
+        $files    = $this->listFiles($type);
 
-        foreach ($this->getFinder()->files()->in($path) as $file) {
+        foreach ($files as $file) {
             $content = $this->load($file);
             $contents[$this->getIndex($file, $content, $indexBy)] = $content;
         }
@@ -98,15 +104,10 @@ class ContentRepository
      */
     public function listContents($type)
     {
-        $path = sprintf('%s/%s', $this->root, $type);
-
-        if (!$this->files->exists($path)) {
-            throw new Exception(sprintf('No content directory find for type "%s".', $type), 1);
-        }
-
         $names = [];
+        $files = $this->listFiles($type);
 
-        foreach ($this->getFinder()->files()->in($path) as $file) {
+        foreach ($files as $file) {
             $names[] = $this->getName($file);
         }
 
@@ -123,13 +124,7 @@ class ContentRepository
      */
     public function getContent($type, $name)
     {
-        $path = sprintf('%s/%s', $this->root, $type);
-
-        if (!$this->files->exists($path)) {
-            throw new Exception(sprintf('No content directory find for type "%s".', $type), 1);
-        }
-
-        $finder = $this->getFinder()->files()->name($name . '.*')->in($path);
+        $finder = $this->listFiles($type)->name($name . '.*');
 
         if (!$finder->count()) {
             throw new Exception(sprintf('No content directory find for type "%s" and name "%s".', $type, $name), 1);
@@ -140,6 +135,28 @@ class ContentRepository
         }
 
         return null;
+    }
+
+    /**
+     * List files
+     *
+     * @param string $type
+     *
+     * @return Finder
+     */
+    private function listFiles($type)
+    {
+        if (!isset($this->cache['files'][$type])) {
+            $path = sprintf('%s/%s', $this->root, $type);
+
+            if (!$this->files->exists($path)) {
+                throw new Exception(sprintf('No content directory find for type "%s".', $type), 1);
+            }
+
+            $this->cache['files'][$type] = $this->getFinder()->files()->in($path);
+        }
+
+        return $this->cache['files'][$type];
     }
 
     /**
@@ -223,33 +240,39 @@ class ContentRepository
      */
     private function load(SplFileInfo $file)
     {
-        $data = $this->decoder->decode($file->getContents(), $this->getFormat($file));
+        $path = $file->getPathName();
 
-        if (!isset($data['slug'])) {
-            $data['slug'] = $this->getName($file);
-        }
+        if (!isset($this->cache['contents'][$path])) {
+            $data = $this->decoder->decode($file->getContents(), $this->getFormat($file));
 
-        if (!isset($data['lastModified'])) {
-            $data['lastModified'] = new DateTime();
-            $data['lastModified']->setTimestamp($file->getMTime());
-        }
-
-        if (isset($data['weight'])) {
-            $data['weight'] = intval($data['weight']);
-        }
-
-        if (isset($data['date'])) {
-            try {
-                $date = new DateTime($data['date']);
-            } catch (Exception $e) {
-                $date = null;
+            if (!isset($data['slug'])) {
+                $data['slug'] = $this->getName($file);
             }
 
-            if ($date) {
-                $data['date'] = $date;
+            if (!isset($data['lastModified'])) {
+                $data['lastModified'] = new DateTime();
+                $data['lastModified']->setTimestamp($file->getMTime());
             }
+
+            if (isset($data['weight'])) {
+                $data['weight'] = intval($data['weight']);
+            }
+
+            if (isset($data['date'])) {
+                try {
+                    $date = new DateTime($data['date']);
+                } catch (Exception $e) {
+                    $date = null;
+                }
+
+                if ($date) {
+                    $data['date'] = $date;
+                }
+            }
+
+            $this->cache['contents'][$path] = $data;
         }
 
-        return $data;
+        return $this->cache['contents'][$path];
     }
 }

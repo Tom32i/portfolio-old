@@ -150,8 +150,6 @@ class Route extends BaseRoute
             ->setDefault('_format', 'rss')
             ->setRequirement('_format', 'rss');
 
-        var_dump($this);
-
         return $this;
     }
 }

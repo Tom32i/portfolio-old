@@ -65,7 +65,6 @@ class BlogController
      */
     public function rss(Request $request, Application $app)
     {
-        var_dump('RSS');
         $items = array_map(
             function ($article) use ($app){
                 return [

@@ -27,6 +27,8 @@ class Pygments
 
     /**
      * Constructor
+     *
+     * @param string $tmp
      */
     public function __construct($tmp = null)
     {

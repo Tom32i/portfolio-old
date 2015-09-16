@@ -37,15 +37,17 @@ final class Application extends BaseApplication
         $this->register(new PhpillipProvider\ControllerServiceProvider());
         $this->register(new PhpillipProvider\TwigExtensionServiceProvider());
         $this->register(new PhpillipProvider\InformatorServiceProvider());
-        //$this->register(new MetaServiceProvider());
 
         # http://silex.sensiolabs.org/doc/usage.html#error-handlers
+        /*$this->error(function (\Exception $e, $code) {
+            return new Response('We are sorry, but something went terribly wrong.');
+        });*/
 
         #request_context
 
-        #https://github.com/silexphp/Silex/wiki/Third-Party-ServiceProviders#config
         #https://github.com/silexphp/Silex/wiki/Third-Party-ServiceProviders#text-formatting
 
         $this['twig.loader.filesystem']->addPath($this['root'] . '/app/Resources/views', 'phpillip');
+
     }
 }

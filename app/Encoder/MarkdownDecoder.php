@@ -9,7 +9,7 @@ use Tom32i\Phpillip\Service\Parsedown;
 /**
  * Encodes Markdown data
  */
-class MarkdownDecoder implements  DecoderInterface
+class MarkdownDecoder implements DecoderInterface
 {
     /**
      * Supported format
