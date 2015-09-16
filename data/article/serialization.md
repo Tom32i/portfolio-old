@@ -11,7 +11,7 @@ In Symfony, I often see this matter handled by the [JMS Serializer](http://jmsys
 
 But after using it in several projects, I'm not totally happy with it.
 I've encountered small problems, mostly __assumptions that don't fit my needs__ and __can't be overrided or redefined easily__.
-Wich makes them deal-breakers in my opinion.
+Which makes them deal-breakers in my opinion.
 
 The solution may be fine for big backends and API where you just want to have your entities serialized "automatically".
 
@@ -36,7 +36,7 @@ Before going further, I recommend that you refresh your memory with [the documen
 
 ### Your domain logic lies into the normalizer
 
-The Serializer component is shiped with several encoders (notably _JSON_ and _YML_ encoders) but you could write quick easily an encoder for any format you need: _CSV_, _YAML_,...
+The Serializer component is shiped with several encoders (notably _JSON_ and _XML_ encoders) but you could write quick easily an encoder for any format you need: _CSV_, _XML_,...
 
 But the heart of the problem of serialization is to transform your object into array (a.k.a the normalization), that's what you do in JMS when you write annotations to tell which property should be included and how.
 
@@ -45,7 +45,7 @@ _That's where the value is, so that's where you want to put your time and effort
 > Need to serialize a specific object in a specific way?
 Declare a normalizer that support this single model!
 
-To write a custom normalizer, you need to implements `NormalizerInterface`, wich describes two methods:
+To write a custom normalizer, you need to implements `NormalizerInterface`, which describes two methods:
 
 - __supportsNormalization__: Answer the question "Can you normalize that object?".
 - __normalize__: Do the transformation from object into array.
@@ -250,7 +250,7 @@ Here's a few more custom normalizers example I wrote for a REST API:
 - __[DateTime](https://gist.github.com/Tom32i/773de875f92322925bd3#file-datetimenormalizer-php)__: The one class in my app responsible for formating Dates for the API.
 - __[Form Error](https://gist.github.com/Tom32i/773de875f92322925bd3#file-formerrornormalizer-php)__: returns a simple array with field names as keys and error messages as values.
 
-You might also want to extends the [`ObjectNormalizer`](https://github.com/symfony/Serializer/blob/4d03a053097b926694a878fcd4b3f230dca56717/Normalizer/ObjectNormalizer.php) shipped with Symfony Serializer component. It loops over the properties of the object to serialize and forward all non-scalar values back to the serializer (wich makes it works with your custom normalizers!). However it make no assumptions about how circular references should be treated, so it requires a little work. But that would be a topic for another article.
+You might also want to extends the [`ObjectNormalizer`](https://github.com/symfony/Serializer/blob/4d03a053097b926694a878fcd4b3f230dca56717/Normalizer/ObjectNormalizer.php) shipped with Symfony Serializer component. It loops over the properties of the object to serialize and forward all non-scalar values back to the serializer (which makes it works with your custom normalizers!). However it make no assumptions about how circular references should be treated, so it requires a little work. But that would be a topic for another article.
 
 ## The Serializer(s) as service(s)
 
