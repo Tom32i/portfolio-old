@@ -17,18 +17,119 @@ class Route extends BaseRoute
     private $content;
 
     /**
-     * Filename
+     * File path
      *
      * @var string
      */
-    private $filename = 'index';
+    private $filePath;
 
     /**
-     * On sitemap
+     * File name
+     *
+     * @var string
+     */
+    private $fileName = 'index';
+
+    /**
+     * List
      *
      * @var boolean
      */
-    private $onSitemap = true;
+    private $list = false;
+
+    /**
+     * Hidden from dump
+     *
+     * @var boolean
+     */
+    private $hidden = false;
+
+    /**
+     * Mapped on sitemap
+     *
+     * @var boolean
+     */
+    private $mapped = true;
+
+    /**
+     * List index
+     *
+     * @var string
+     */
+    private $index;
+
+    /**
+     * List sort order
+     *
+     * @var boolean
+     */
+    private $order;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setPath($pattern)
+    {
+        parent::setPath($pattern);
+
+        if (preg_match('#^(.*/)?(\w+)\.(\w+)$#i', $pattern, $matches)) {
+            $this->setFilePath($matches[1]);
+            $this->setFilename($matches[2]);
+            $this->format($matches[3]);
+        } else {
+            $this->setFilePath($pattern);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set file path
+     *
+     * @param string $filePath
+     *
+     * @return Route
+     */
+    public function setFilePath($filePath)
+    {
+        $this->filePath = $filePath;
+
+        return $this;
+    }
+
+    /**
+     * Get file path
+     *
+     * @return string
+     */
+    public function getFilePath()
+    {
+        return $this->filePath;
+    }
+
+    /**
+     * Set file name
+     *
+     * @param string $fileName
+     *
+     * @return Route
+     */
+    public function setFileName($fileName)
+    {
+        $this->fileName = $fileName;
+
+        return $this;
+    }
+
+    /**
+     * Get file name
+     *
+     * @return string
+     */
+    public function getFileName()
+    {
+        return $this->fileName;
+    }
 
     /**
      * Content
@@ -40,6 +141,46 @@ class Route extends BaseRoute
     public function content($content)
     {
         $this->content = $content;
+
+        return $this;
+    }
+
+    /**
+     * Contents
+     *
+     * @param string $content Type of content to load
+     * @param string $index Index the results by the given field name
+     * @param string $order Sort content: true for ascending, false for descending
+     *
+     * @return Route
+     */
+    public function contents($content, $index = null, $order = true)
+    {
+        $this->content($content);
+
+        $this->list  = true;
+        $this->index = $index;
+        $this->order = $order;
+
+        return $this;
+    }
+
+    /**
+     * Paginate
+     *
+     * @param string $content
+     *
+     * @return Route
+     */
+    public function paginate($content, $index = null, $order = true)
+    {
+        if (!$this->isPaginated()) {
+            $this
+                ->contents($content, $index, $order)
+                ->setPath($this->getPath() . '/{page}')
+                ->value('page', 1)
+                ->assert('page', '\d+');
+        }
 
         return $this;
     }
@@ -65,20 +206,33 @@ class Route extends BaseRoute
     }
 
     /**
-     * Paginate
+     * Is content list?
      *
-     * @return Route
+     * @return boolean
      */
-    public function paginate()
+    public function isList()
     {
-        if (!$this->isPaginated()) {
-            $this
-                ->setPath($this->getPath() . '/{page}')
-                ->value('page', 1)
-                ->assert('page', '\d+');
-        }
+        return $this->list;
+    }
 
-        return $this;
+    /**
+     * Get index by
+     *
+     * @return string
+     */
+    public function getIndexBy()
+    {
+        return $this->index;
+    }
+
+    /**
+     * Get sort order
+     *
+     * @return boolean
+     */
+    public function getOrder()
+    {
+        return $this->order;
     }
 
     /**
@@ -92,63 +246,75 @@ class Route extends BaseRoute
     }
 
     /**
+     * Hide
+     *
+     * @return Route
+     */
+    public function hide()
+    {
+        $this->hidden = true;
+
+        return $this;
+    }
+
+    /**
+     * Is visible?
+     *
+     * @return boolean
+     */
+    public function isVisible()
+    {
+        return !$this->hidden;
+    }
+
+    /**
      * Hide from sitemap
      *
      * @return Route
      */
     public function hideFromSitemap()
     {
-        $this->onSitemap = false;
+        $this->mapped = false;
 
         return $this;
     }
 
     /**
-     * Is route on sitemap
+     * Is route on sitemap?
      *
      * @return boolean
      */
-    public function isOnSitemap()
+    public function isMapped()
     {
-        return $this->onSitemap;
+        return $this->mapped;
     }
 
     /**
-     * Set filename
+     * Format
      *
-     * @param string $filename
+     * @param string $format
      *
      * @return Route
      */
-    public function setFilename($filename)
+    public function format($format)
     {
-        $this->filename = $filename;
+        $this
+            ->value('_format', $format)
+            ->assert('_format', $format);
 
         return $this;
     }
 
     /**
-     * Get filename
+     * Set template
      *
-     * @return string
-     */
-    public function getFilename()
-    {
-        return $this->filename;
-    }
-
-    /**
-     * Set RSS
+     * @param string $template
      *
      * @return Route
      */
-    public function rss()
+    public function template($template)
     {
-        $this
-            ->setFilename('feed')
-            ->hideFromSitemap()
-            ->setDefault('_format', 'rss')
-            ->setRequirement('_format', 'rss');
+        $this->value('_template', $template);
 
         return $this;
     }

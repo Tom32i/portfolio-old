@@ -80,4 +80,4 @@ gulp.task('watch', ['dev'], function () {
 });
 
 gulp.task('dev', ['public', 'css', 'js-full', 'html']);
-gulp.task('default', ['public', 'css', 'js-min']);
+gulp.task('default', ['public', 'css', 'js-min', 'html']);

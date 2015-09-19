@@ -1,6 +1,6 @@
 <?php
 
-namespace Tom32i\Phpillip\Service;
+namespace Tom32i\Phpillip\Model;
 
 use RuntimeException;
 
@@ -20,11 +20,11 @@ class Paginator
      * Constructor
      *
      * @param array $contents
-     * @param integer|null $perPage
+     * @param integer $perPage
      */
-    public function __construct(array $contents, $perPage = null)
+    public function __construct(array $contents, $perPage = 10)
     {
-        $this->pages = array_chunk($contents, $perPage ?: 10);
+        $this->pages = array_chunk($contents, $perPage);
     }
 
     /**

@@ -19,23 +19,23 @@ class ControllerServiceProvider implements ServiceProviderInterface
             ->bind('homepage');
 
         $app->get('/blog', 'Tom32i\\Portfolio\\Controller\\BlogController::index')
-            ->content('article')
-            ->paginate()
-            ->setDefault('_format', 'html')
-            ->setRequirement('_format', 'html')
+            ->paginate('article', 'date', false)
+            ->format('html')
             ->bind('blog');
+
+        $app->get('blog-latest', 'Tom32i\\Portfolio\\Controller\\BlogController::latest')
+            ->contents('article', 'date', false)
+            ->hide()
+            ->bind('blog_latest');
+
+        $app->get('/blog/feed.rss', 'Tom32i\\Portfolio\\Controller\\BlogController::feed')
+            ->contents('article', 'date', false)
+            ->hideFromSitemap()
+            ->bind('blog_rss');
 
         $app->get('/blog/{article}', 'Tom32i\\Portfolio\\Controller\\BlogController::article')
             ->content('article')
-            ->bind('article')
-            ->convert('article', function ($article)  use ($app) {
-                return $app['content_repository']->getContent('article', $article);
-            });
-
-        $app->get('/blog/', 'Tom32i\\Portfolio\\Controller\\BlogController::rss')
-            ->content('article')
-            ->rss()
-            ->bind('blog_rss');
+            ->bind('article');
     }
 
     /**

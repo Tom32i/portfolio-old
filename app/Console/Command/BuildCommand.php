@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Tom32i\Phpillip\Console\Service\ContentProvider;
 use Tom32i\Phpillip\Console\Utils\Logger;
+use Tom32i\Phpillip\Model\Paginator;
 use Tom32i\Phpillip\Model\Sitemap;
 use Tom32i\Phpillip\Routing\Route;
-use Tom32i\Phpillip\Service\Paginator;
 
 /**
  * Build Command
@@ -87,10 +87,13 @@ class BuildCommand extends Command
         $this->app          = $this->getApplication()->getKernel();
         $this->files        = new Filesystem();
         $this->logger       = new Logger($output);
-        $this->sitemap      = new Sitemap();
         $this->content      = $this->app['content_repository'];
         $this->urlGenerator = $this->app['url_generator'];
         $this->destination  = $this->app['root'] . '/dist';
+
+        if ($this->app['sitemap']) {
+            $this->sitemap = new Sitemap();
+        }
 
         if ($this->host = $input->getArgument('host')) {
             $this->urlGenerator->getContext()->setHost($this->host);
@@ -105,10 +108,14 @@ class BuildCommand extends Command
         $this->logger->log(sprintf('Building <info>%s</info> routes...', $this->app['routes']->count()));
 
         foreach ($this->app['routes'] as $name => $route) {
-            $this->dump($name, $route);
+            if ($route->isVisible()) {
+                $this->dump($name, $route);
+            }
         }
 
-        $this->buildSitemap();
+        if ($this->sitemap) {
+            $this->buildSitemap();
+        }
     }
 
     /**
@@ -124,8 +131,12 @@ class BuildCommand extends Command
         }
 
         if ($route->hasContent()) {
-            if ($route->isPaginated()) {
-                $this->buildPaginatedRoute($name, $route);
+            if ($route->isList()) {
+                if ($route->isPaginated()) {
+                    $this->buildPaginatedRoute($name, $route);
+                } else {
+                    $this->buildListRoute($name, $route);
+                }
             } else {
                 $this->buildContentRoute($name, $route);
             }
@@ -157,6 +168,21 @@ class BuildCommand extends Command
         }
 
         $this->logger->finish();
+    }
+
+    /**
+     * Build list route
+     *
+     * @param string $name
+     * @param Route $route
+     */
+    private function buildListRoute($name, Route $route)
+    {
+        $type     = $route->getContent();
+        $contents = $this->content->listContents($type);
+
+        $this->logger->log(sprintf('Building route <comment>%s</comment> with <info>%s</info> <comment>%s(s)</comment>', $name, count($contents), $type));
+        $this->build($name, $route);
     }
 
     /**
@@ -192,30 +218,28 @@ class BuildCommand extends Command
      */
     private function build($name, Route $route, array $parameters = [])
     {
-        $path     = '/' . trim($route->getPath(), '/');
         $url      = $this->urlGenerator->generate($name, $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
         $format   = $route->getDefault('_format') ?: 'html';
-        $filename = $route->getFilename();
+        $filepath = trim($route->getFilePath(), '/');
+        $filename = $route->getFileName();
         $request  = Request::create($url, 'GET', array_merge($parameters, ['_format' => $format]));
         $response = $this->app->handle($request);
 
-        if ($route->isOnSitemap()) {
+        if ($this->sitemap && $route->isMapped()) {
             $this->sitemap->add($url, $response->headers->get('Last-Modified'));
         }
 
         foreach ($route->getDefaults() as $key => $value) {
             if (isset($parameters[$key]) && $parameters[$key] == $value) {
-                $path = rtrim(preg_replace(sprintf('#{%s}/?#', $key), null, $path), '/');
+                $filepath = rtrim(preg_replace(sprintf('#{%s}/?#', $key), null, $filepath), '/');
             }
         }
 
         foreach ($parameters as $key => $value) {
-            $path = str_replace(sprintf('{%s}', $key), (string) $value, $path);
+            $filepath = str_replace(sprintf('{%s}', $key), (string) $value, $filepath);
         }
 
-        $this->write($this->destination . $path, $response->getContent(), $format, $filename);
-
-        $this->logger->log(sprintf('    Build path <comment>%s</comment>', $path));
+        $this->write($filepath, $response->getContent(), $format, $filename);
     }
 
     /**
@@ -227,7 +251,7 @@ class BuildCommand extends Command
 
         $sitemap = $this->app['twig']->render('@phpillip/sitemap.xml.twig', ['sitemap' => $this->sitemap]);
 
-        $this->write($this->destination, $sitemap, 'xml', 'sitemap');
+        $this->write('/', $sitemap, 'xml', 'sitemap');
     }
 
     /**
@@ -235,13 +259,19 @@ class BuildCommand extends Command
      *
      * @param string $path
      * @param string $content
+     * @param string $filename
+     * @param string $format
      */
     private function write($path, $content, $format = 'html', $filename = 'index')
     {
-        if (!$this->files->exists($path)) {
-            $this->files->mkdir($path);
+        $directory = sprintf('%s/%s', $this->destination, trim($path, '/'));
+        $file      = sprintf('%s.%s', $filename, $format);
+
+        if (!$this->files->exists($directory)) {
+            $this->files->mkdir($directory);
         }
 
-        $this->files->dumpFile(sprintf('%s/%s.%s', rtrim($path, '/'), $filename, $format), $content);
+        $this->files->dumpFile(sprintf('%s/%s', $directory, $file), $content);
+        $this->logger->log(sprintf('    Built file <comment>%s/</comment><info>%s</info>', trim($path, '/'), $file));
     }
 }

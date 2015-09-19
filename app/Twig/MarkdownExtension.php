@@ -3,12 +3,13 @@
 namespace Tom32i\Phpillip\Twig;
 
 use Tom32i\Phpillip\Service\Parsedown;
+use Twig_Extension as Extension;
 use Twig_SimpleFilter as SimpleFilter;
 
 /**
  * Markdown extension
  */
-class MarkdownExtension extends \Twig_Extension
+class MarkdownExtension extends Extension
 {
     /**
      * {@inheritdoc}

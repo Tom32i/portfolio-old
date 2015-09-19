@@ -71,19 +71,19 @@ class ContentRepository
      * Get contents for the given type
      *
      * @param string $type Type of content to load
-     * @param string $indexBy Index the results by the given field name
-     * @param string $order true for asc, false for desc
+     * @param string $index Index the results by the given field name
+     * @param string $order Sort content: true for ascending, false for descending
      *
      * @return array
      */
-    public function getContents($type, $indexBy = null, $order = true)
+    public function getContents($type, $index = null, $order = true)
     {
         $contents = [];
         $files    = $this->listFiles($type);
 
         foreach ($files as $file) {
             $content = $this->load($file);
-            $contents[$this->getIndex($file, $content, $indexBy)] = $content;
+            $contents[$this->getIndex($file, $content, $index)] = $content;
         }
 
         if ($order === true) {
@@ -156,7 +156,7 @@ class ContentRepository
             $this->cache['files'][$type] = $this->getFinder()->files()->in($path);
         }
 
-        return $this->cache['files'][$type];
+        return clone $this->cache['files'][$type];
     }
 
     /**
@@ -202,17 +202,17 @@ class ContentRepository
      *
      * @param SplFileInfo $file
      * @param array $content
-     * @param string|null $indexBy
+     * @param string|null $key
      *
      * @return string
      */
-    private function getIndex(SplFileInfo $file, $content, $indexBy)
+    private function getIndex(SplFileInfo $file, $content, $key)
     {
-        if (!$indexBy || !isset($content[$indexBy])) {
+        if (!$key || !isset($content[$key])) {
             return $this->getName($file);
         }
 
-        $index = $content[$indexBy];
+        $index = $content[$key];
 
         if ($index instanceof DateTime) {
             return $index->format('U');

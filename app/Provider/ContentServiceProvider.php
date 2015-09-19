@@ -9,6 +9,8 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Tom32i\Phpillip\Encoder\MarkdownDecoder;
 use Tom32i\Phpillip\Encoder\YamlEncoder;
+use Tom32i\Phpillip\EventListener\ContentConverterListener;
+use Tom32i\Phpillip\EventListener\LastModifierListener;
 use Tom32i\Phpillip\Service\ContentRepository;
 
 /**
@@ -36,6 +38,9 @@ class ContentServiceProvider implements ServiceProviderInterface
         $app['content_repository'] = $app->share(function ($app) {
             return new ContentRepository($app['serializer'], $app['root']);
         });
+
+        $app['dispatcher']->addSubscriber(new ContentConverterListener($app['routes'], $app['content_repository']));
+        $app['dispatcher']->addSubscriber(new LastModifierListener($app['routes']));
     }
 
     /**

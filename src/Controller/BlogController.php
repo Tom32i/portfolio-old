@@ -6,7 +6,7 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Tom32i\Phpillip\Service\Paginator;
+use Tom32i\Phpillip\Model\Paginator;
 
 /**
  * Blog Controller
@@ -22,18 +22,13 @@ class BlogController
      *
      * @return Response
      */
-    public function index(Request $request, Application $app, $page = 1)
+    public function index(Request $request, Application $app, Paginator $paginator, array $articles, $page = 1)
     {
-        $paginator = new Paginator($app['content_repository']->getContents('article', 'date', false));
-        $articles  = $paginator->get($page);
-        $content   = $app['twig']->render('blog/index.html.twig', [
+        return [
             'articles' => $articles,
             'pages'    => $paginator->count(),
             'page'     => $page,
-            'latest'   => $app['content_repository']->getContents('article', 'date', false, 5),
-        ]);
-
-        return new Response($content, 200, ['Last-Modified' => $articles[0]['lastModified']]);
+        ];
     }
 
     /**
@@ -47,12 +42,21 @@ class BlogController
      */
     public function article(Request $request, Application $app, array $article)
     {
-        $content = $app['twig']->render('blog/article.html.twig', [
-            'article' => $article,
-            'latest'  => $app['content_repository']->getContents('article', 'date', false, 5),
-        ]);
+        return ['article' => $article];
+    }
 
-        return new Response($content, 200, ['Last-Modified' => $article['lastModified']]);
+    /**
+     * List latest articles
+     *
+     * @param Request $request
+     * @param Application $app
+     * @param array $articles
+     *
+     * @return string
+     */
+    public function latest(Request $request, Application $app, array $articles)
+    {
+        return ['articles' => array_slice($articles, 0, 5)];
     }
 
     /**
@@ -60,35 +64,32 @@ class BlogController
      *
      * @param Request $request
      * @param Application $app
+     * @param array $articles
      *
      * @return Response
      */
-    public function rss(Request $request, Application $app)
+    public function feed(Request $request, Application $app, array $articles)
     {
-        $items = array_map(
-            function ($article) use ($app){
-                return [
-                    'title'       => $article['title'],
-                    'description' => $article['description'],
-                    'guid'        => $article['slug'],
-                    'pubDate'     => $article['date'],
-                    'link'        => $app['url_generator']->generate(
-                        'article',
-                        ['article' => $article['slug']],
-                        UrlGeneratorInterface::ABSOLUTE_URL
-                    )
-                ];
-            },
-            $app['content_repository']->getContents('article', 'date', false)
-        );
-
-        $content = $app['twig']->render('@phpillip/rss.xml.twig', [
-            'title'       => $app['config']['parameters']['meta']['blog']['title'],
-            'description' => $app['config']['parameters']['meta']['blog']['description'],
+        return [
+            'title'       => $app['parameters']['meta']['blog']['title'],
+            'description' => $app['parameters']['meta']['blog']['description'],
             'webmaster'   => 'thomas.jarrand@gmail.com',
-            'items'       => $items,
-        ]);
-
-        return new Response($content, 200, ['Content-Type' => 'application/rss+xml']);
+            'items'       => array_map(
+                function ($article) use ($app){
+                    return [
+                        'title'       => $article['title'],
+                        'description' => $article['description'],
+                        'guid'        => $article['slug'],
+                        'pubDate'     => $article['date'],
+                        'link'        => $app['url_generator']->generate(
+                            'article',
+                            ['article' => $article['slug']],
+                            UrlGeneratorInterface::ABSOLUTE_URL
+                        )
+                    ];
+                },
+                $articles
+            ),
+        ];
     }
 }

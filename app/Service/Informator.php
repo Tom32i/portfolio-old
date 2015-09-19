@@ -19,21 +19,22 @@ class Informator
     private $urlGenerator;
 
     /**
-     * App configuration
+     * Application parameters
      *
      * @var array
      */
-    private $config;
+    private $parameters;
 
     /**
      * Injecting dependencies
      *
      * @param UrlGeneratorInterface $urlGenerator
+     * @param array $parameters
      */
-    public function __construct(UrlGeneratorInterface $urlGenerator, array $config)
+    public function __construct(UrlGeneratorInterface $urlGenerator, array $parameters)
     {
         $this->urlGenerator = $urlGenerator;
-        $this->config       = $config;
+        $this->parameters   = $parameters;
     }
 
     /**
@@ -52,6 +53,6 @@ class Informator
 
         $request->attributes->set('_canonical', $url);
         $app['twig']->addGlobal('canonical', $url);
-        $app['twig']->addGlobal('parameters', $this->config['parameters']);
+        $app['twig']->addGlobal('parameters', $this->parameters);
     }
 }
