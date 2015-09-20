@@ -52,6 +52,7 @@ class Informator
         );
 
         $request->attributes->set('_canonical', $url);
+
         $app['twig']->addGlobal('canonical', $url);
         $app['twig']->addGlobal('parameters', $this->parameters);
     }

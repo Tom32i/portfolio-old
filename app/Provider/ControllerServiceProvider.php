@@ -16,6 +16,7 @@ class ControllerServiceProvider implements ServiceProviderInterface
     public function register(Application $app)
     {
         $app->get('/', 'Tom32i\\Portfolio\\Controller\\AppController::index')
+            ->template('index.html.twig')
             ->bind('homepage');
 
         $app->get('/blog', 'Tom32i\\Portfolio\\Controller\\BlogController::index')

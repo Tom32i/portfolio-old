@@ -8,6 +8,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Serializer\Encoder\DecoderInterface;
+use Tom32i\Phpillip\Behavior\PropertyHandlerInterface;
 
 /**
  * Content repository
@@ -36,6 +37,13 @@ class ContentRepository
     private $files;
 
     /**
+     * Property handlers
+     *
+     * @var array
+     */
+    private $handlers;
+
+    /**
      * Root directory
      *
      * @var string
@@ -58,10 +66,11 @@ class ContentRepository
      */
     public function __construct(DecoderInterface $decoder, $root, $contentDir = 'data')
     {
-        $this->decoder = $decoder;
-        $this->root    = rtrim($root, '/') . '/' . trim($contentDir, '/');
-        $this->files   = new FileSystem();
-        $this->cache   = [
+        $this->decoder  = $decoder;
+        $this->root     = rtrim($root, '/') . '/' . trim($contentDir, '/');
+        $this->files    = new FileSystem();
+        $this->handlers = [];
+        $this->cache    = [
             'files'    => [],
             'contents' => [],
         ];
@@ -86,10 +95,8 @@ class ContentRepository
             $contents[$this->getIndex($file, $content, $index)] = $content;
         }
 
-        if ($order === true) {
-            ksort($contents);
-        } elseif ($order === false) {
-            krsort($contents);
+        if ($order !== null) {
+            $order ? ksort($contents) : krsort($contents);
         }
 
         return $contents;
@@ -138,6 +145,30 @@ class ContentRepository
     }
 
     /**
+     * Add property handler
+     *
+     * @param PropertyHandlerInterface $handler
+     */
+    public function addPropertyHandler(PropertyHandlerInterface $handler)
+    {
+        $this->handlers[$handler->getProperty()] = $handler;
+    }
+
+    /**
+     * Get name
+     *
+     * @param SplFileInfo $file
+     *
+     * @return string
+     */
+    public static function getName(SplFileInfo $file)
+    {
+        $name = $file->getRelativePathname();
+
+        return substr($name, 0, strrpos($name, '.'));
+    }
+
+    /**
      * List files
      *
      * @param string $type
@@ -153,24 +184,12 @@ class ContentRepository
                 throw new Exception(sprintf('No content directory find for type "%s".', $type), 1);
             }
 
-            $this->cache['files'][$type] = $this->getFinder()->files()->in($path);
+            $finder = new Finder();
+
+            $this->cache['files'][$type] = $finder->files()->in($path);
         }
 
         return clone $this->cache['files'][$type];
-    }
-
-    /**
-     * Get name
-     *
-     * @param SplFileInfo $file
-     *
-     * @return string
-     */
-    private function getName(SplFileInfo $file)
-    {
-        $name = $file->getRelativePathname();
-
-        return substr($name, 0, strrpos($name, '.'));
     }
 
     /**
@@ -222,16 +241,6 @@ class ContentRepository
     }
 
     /**
-     * Get new Finder instance
-     *
-     * @return Finder
-     */
-    private function getFinder()
-    {
-        return new Finder();
-    }
-
-    /**
      * Get content
      *
      * @param SplFileInfo $file
@@ -243,30 +252,12 @@ class ContentRepository
         $path = $file->getPathName();
 
         if (!isset($this->cache['contents'][$path])) {
-            $data = $this->decoder->decode($file->getContents(), $this->getFormat($file));
+            $data    = $this->decoder->decode($file->getContents(), $this->getFormat($file));
+            $context = ['file' => $file];
 
-            if (!isset($data['slug'])) {
-                $data['slug'] = $this->getName($file);
-            }
-
-            if (!isset($data['lastModified'])) {
-                $data['lastModified'] = new DateTime();
-                $data['lastModified']->setTimestamp($file->getMTime());
-            }
-
-            if (isset($data['weight'])) {
-                $data['weight'] = intval($data['weight']);
-            }
-
-            if (isset($data['date'])) {
-                try {
-                    $date = new DateTime($data['date']);
-                } catch (Exception $e) {
-                    $date = null;
-                }
-
-                if ($date) {
-                    $data['date'] = $date;
+            foreach ($this->handlers as $property => $handler) {
+                if ($handler->isSupported($data)) {
+                    $data[$property] = $handler->handle(isset($data[$property]) ? $data[$property] : null, $context);
                 }
             }
 
