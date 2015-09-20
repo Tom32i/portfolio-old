@@ -15,7 +15,7 @@ class Parsedown extends BaseParsedown
      *
      * @var Pygment
      */
-    private $pygments;
+    protected $pygments;
 
     /**
      * Constructor
@@ -64,7 +64,7 @@ class Parsedown extends BaseParsedown
      *
      * @return string
      */
-    private function getCode($Block)
+    protected function getCode($Block)
     {
         if (!isset($Block['element']['text']['text'])) {
             return null;
@@ -86,7 +86,7 @@ class Parsedown extends BaseParsedown
      *
      * @return string
      */
-    private function getLanguage($Block)
+    protected function getLanguage($Block)
     {
         if (!isset($Block['element']['text']['attributes'])) {
             return null;

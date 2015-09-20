@@ -23,7 +23,7 @@ class TemplateListener implements EventSubscriberInterface
      *
      * @var Twig_Environment
      */
-    private $templating;
+    protected $templating;
 
     /**
      * Templating

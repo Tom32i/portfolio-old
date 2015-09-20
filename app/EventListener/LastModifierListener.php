@@ -22,7 +22,7 @@ class LastModifierListener implements EventSubscriberInterface
      *
      * @var RouteCollection
      */
-    private $routes;
+    protected $routes;
 
     /**
      * Constructor

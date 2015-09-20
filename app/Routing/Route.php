@@ -14,56 +14,56 @@ class Route extends BaseRoute
      *
      * @var string
      */
-    private $content;
+    protected $content;
 
     /**
      * File path
      *
      * @var string
      */
-    private $filePath;
+    protected $filePath;
 
     /**
      * File name
      *
      * @var string
      */
-    private $fileName = 'index';
+    protected $fileName = 'index';
 
     /**
      * List
      *
      * @var boolean
      */
-    private $list = false;
+    protected $list = false;
 
     /**
      * Hidden from dump
      *
      * @var boolean
      */
-    private $hidden = false;
+    protected $hidden = false;
 
     /**
      * Mapped on sitemap
      *
      * @var boolean
      */
-    private $mapped = true;
+    protected $mapped = true;
 
     /**
      * List index
      *
      * @var string
      */
-    private $index;
+    protected $index;
 
     /**
      * List sort order
      *
      * @var boolean
      */
-    private $order;
+    protected $order;
 
     /**
      * {@inheritdoc}

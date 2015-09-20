@@ -16,53 +16,53 @@ use Tom32i\Phpillip\Behavior\PropertyHandlerInterface;
 class ContentRepository
 {
     /**
-     * Decoder
+     * Content Decoder
      *
      * @var DecoderInterface
      */
-    private $decoder;
+    protected $decoder;
 
     /**
      * Finder
      *
      * @var Finder
      */
-    private $finder;
+    protected $finder;
 
     /**
-     * Files
+     * File browser
      *
      * @var FileSystem
      */
-    private $files;
+    protected $files;
 
     /**
      * Property handlers
      *
      * @var array
      */
-    private $handlers;
+    protected $handlers;
 
     /**
-     * Root directory
+     * Contents root directory
      *
      * @var string
      */
-    private $root;
+    protected $root;
 
     /**
      * Cache
      *
      * @var array
      */
-    private $cache;
+    protected $cache;
 
     /**
      * Constructor
      *
-     * @param DecoderInterface $decoder
-     * @param string $root
-     * @param string $contentDir
+     * @param DecoderInterface $decoder The decoder that will parse content files
+     * @param string $root The root directory of the app
+     * @param string $contentDir The name of the directory containing content files
      */
     public function __construct(DecoderInterface $decoder, $root, $contentDir = 'data')
     {
@@ -77,13 +77,13 @@ class ContentRepository
     }
 
     /**
-     * Get contents for the given type
+     * Get all contents for the given type
      *
      * @param string $type Type of content to load
-     * @param string $index Index the results by the given field name
-     * @param string $order Sort content: true for ascending, false for descending
+     * @param string|null $index Index the result array by the given field name (from content)
+     * @param boolean|null $order Sort the result array: true for ascending, false for descending
      *
-     * @return array
+     * @return array[] Array of contents
      */
     public function getContents($type, $index = null, $order = true)
     {
@@ -107,7 +107,7 @@ class ContentRepository
      *
      * @param string $type Type of content to list
      *
-     * @return array
+     * @return string[] Content names
      */
     public function listContents($type)
     {
@@ -115,7 +115,7 @@ class ContentRepository
         $files = $this->listFiles($type);
 
         foreach ($files as $file) {
-            $names[] = $this->getName($file);
+            $names[] = static::getName($file);
         }
 
         return $names;
@@ -124,10 +124,10 @@ class ContentRepository
     /**
      * Get the content for the given type and name
      *
-     * @param string $type
-     * @param string $name
+     * @param string $type Type of content to load
+     * @param string $name The name of the content file (without extension)
      *
-     * @return array
+     * @return array Content as associative array
      */
     public function getContent($type, $name)
     {
@@ -147,19 +147,23 @@ class ContentRepository
     /**
      * Add property handler
      *
-     * @param PropertyHandlerInterface $handler
+     * @param PropertyHandlerInterface $handler Handler
+     *
+     * @return ContentRepository
      */
     public function addPropertyHandler(PropertyHandlerInterface $handler)
     {
         $this->handlers[$handler->getProperty()] = $handler;
+
+        return $this;
     }
 
     /**
-     * Get name
+     * Get the name of a file
      *
-     * @param SplFileInfo $file
+     * @param SplFileInfo $file The file
      *
-     * @return string
+     * @return string The name
      */
     public static function getName(SplFileInfo $file)
     {
@@ -169,37 +173,13 @@ class ContentRepository
     }
 
     /**
-     * List files
+     * Get the format of a file from its extension
      *
-     * @param string $type
+     * @param SplFileInfo $file The file
      *
-     * @return Finder
+     * @return string The format
      */
-    private function listFiles($type)
-    {
-        if (!isset($this->cache['files'][$type])) {
-            $path = sprintf('%s/%s', $this->root, $type);
-
-            if (!$this->files->exists($path)) {
-                throw new Exception(sprintf('No content directory find for type "%s".', $type), 1);
-            }
-
-            $finder = new Finder();
-
-            $this->cache['files'][$type] = $finder->files()->in($path);
-        }
-
-        return clone $this->cache['files'][$type];
-    }
-
-    /**
-     * Get format
-     *
-     * @param SplFileInfo $file
-     *
-     * @return string
-     */
-    private function getFormat(SplFileInfo $file)
+    public static function getFormat(SplFileInfo $file)
     {
         $name = $file->getRelativePathname();
         $ext  = substr($name, strrpos($name, '.') + 1);
@@ -217,18 +197,42 @@ class ContentRepository
     }
 
     /**
-     * Get index for the given content
+     * List files for the given type
+     *
+     * @param string $type Type of content to list
+     *
+     * @return Finder A Finder instance, filtered by type
+     */
+    protected function listFiles($type)
+    {
+        if (!isset($this->cache['files'][$type])) {
+            $path = sprintf('%s/%s', $this->root, $type);
+
+            if (!$this->files->exists($path)) {
+                throw new Exception(sprintf('No content directory find for type "%s".', $type), 1);
+            }
+
+            $finder = new Finder();
+
+            $this->cache['files'][$type] = $finder->files()->in($path);
+        }
+
+        return clone $this->cache['files'][$type];
+    }
+
+    /**
+     * Get index of the given content for content lists
      *
      * @param SplFileInfo $file
      * @param array $content
      * @param string|null $key
      *
-     * @return string
+     * @return string The string index (by default, the file name)
      */
-    private function getIndex(SplFileInfo $file, $content, $key)
+    protected function getIndex(SplFileInfo $file, $content, $key = null)
     {
-        if (!$key || !isset($content[$key])) {
-            return $this->getName($file);
+        if ($key === null || !isset($content[$key])) {
+            return static::getName($file);
         }
 
         $index = $content[$key];
@@ -241,23 +245,25 @@ class ContentRepository
     }
 
     /**
-     * Get content
+     * Get the file content
      *
-     * @param SplFileInfo $file
+     * @param SplFileInfo $file The file to load
      *
-     * @return string
+     * @return array Parsed content (associative array)
      */
-    private function load(SplFileInfo $file)
+    protected function load(SplFileInfo $file)
     {
         $path = $file->getPathName();
 
         if (!isset($this->cache['contents'][$path])) {
-            $data    = $this->decoder->decode($file->getContents(), $this->getFormat($file));
+            $data    = $this->decoder->decode($file->getContents(), static::getFormat($file));
             $context = ['file' => $file];
 
-            foreach ($this->handlers as $property => $handler) {
-                if ($handler->isSupported($data)) {
-                    $data[$property] = $handler->handle(isset($data[$property]) ? $data[$property] : null, $context);
+            if (is_array($data)) {
+                foreach ($this->handlers as $property => $handler) {
+                    if ($handler->isSupported($data)) {
+                        $data[$property] = $handler->handle(isset($data[$property]) ? $data[$property] : null, $context);
+                    }
                 }
             }
 

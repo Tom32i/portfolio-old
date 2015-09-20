@@ -15,7 +15,7 @@ class SlugPropertyHandler implements PropertyHandlerInterface
      *
      * @var ContentRepository
      */
-    private $contentRepository;
+    protected $contentRepository;
 
     /**
      * {@inheritdoc}

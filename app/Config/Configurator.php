@@ -20,35 +20,35 @@ class Configurator
      *
      * @var Application
      */
-    private $app;
+    protected $app;
 
     /**
      * Configuration definition
      *
      * @var ConfigurationInterface
      */
-    private $configuration;
+    protected $configuration;
 
     /**
      * File locator
      *
      * @var FileLocator
      */
-    private $locator;
+    protected $locator;
 
     /**
      * Resolver
      *
      * @var LoaderResolver
      */
-    private $resolver;
+    protected $resolver;
 
     /**
      * File loader
      *
      * @var DelegatingLoader
      */
-    private $loader;
+    protected $loader;
 
     /**
      * Constructor

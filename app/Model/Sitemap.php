@@ -15,14 +15,14 @@ class Sitemap implements Iterator, Countable
      *
      * @var array
      */
-    private $urls = [];
+    protected $urls = [];
 
     /**
      * Position
      *
      * @var integer
      */
-    private $position;
+    protected $position;
 
     /**
      * Add location

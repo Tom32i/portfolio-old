@@ -26,42 +26,42 @@ class BuildCommand extends Command
      *
      * @var Symfony\Component\Console\Application
      */
-    private $app;
+    protected $app;
 
     /**
      * File system
      *
      * @var FileSystem
      */
-    private $files;
+    protected $files;
 
     /**
      * Destination folder
      *
      * @var string
      */
-    private $destination;
+    protected $destination;
 
     /**
      * Logger
      *
      * @var Logger
      */
-    private $logger;
+    protected $logger;
 
     /**
      * Host for absolute urls
      *
      * @var string
      */
-    private $host;
+    protected $host;
 
     /**
      * Sitemap
      *
      * @var Sitemap
      */
-    private $sitemap;
+    protected $sitemap;
 
     /**
      * {@inheritdoc}
@@ -124,7 +124,7 @@ class BuildCommand extends Command
      * @param string $name
      * @param Route $route
      */
-    private function dump($name, Route $route)
+    protected function dump($name, Route $route)
     {
         if (!in_array('GET', $route->getMethods())) {
             throw new Exception(sprintf('Invalid methods for route "%s".', $name), 1);
@@ -152,7 +152,7 @@ class BuildCommand extends Command
      * @param string $name
      * @param Route $route
      */
-    private function buildPaginatedRoute($name, Route $route)
+    protected function buildPaginatedRoute($name, Route $route)
     {
         $type       = $route->getContent();
         $contents   = $this->content->listContents($type);
@@ -176,7 +176,7 @@ class BuildCommand extends Command
      * @param string $name
      * @param Route $route
      */
-    private function buildListRoute($name, Route $route)
+    protected function buildListRoute($name, Route $route)
     {
         $type     = $route->getContent();
         $contents = $this->content->listContents($type);
@@ -191,11 +191,11 @@ class BuildCommand extends Command
      * @param string $name
      * @param Route $route
      */
-    private function buildContentRoute($name, Route $route)
+    protected function buildContentRoute($name, Route $route)
     {
-        $type       = $route->getContent();
-        $contents   = $this->content->listContents($type);
-        $length     = count($contents);
+        $type     = $route->getContent();
+        $contents = $this->content->listContents($type);
+        $length   = count($contents);
 
         $this->logger->log(sprintf('Building route <comment>%s</comment> for <info>%s</info> <comment>%s(s)</comment>', $name, $length, $type));
         $this->logger->getProgress($length);
@@ -216,7 +216,7 @@ class BuildCommand extends Command
      * @param Route $route
      * @param array $parameters
      */
-    private function build($name, Route $route, array $parameters = [])
+    protected function build($name, Route $route, array $parameters = [])
     {
         $url      = $this->urlGenerator->generate($name, $parameters, UrlGeneratorInterface::ABSOLUTE_URL);
         $format   = $route->getDefault('_format') ?: 'html';
@@ -245,7 +245,7 @@ class BuildCommand extends Command
     /**
      * Build sitemap
      */
-    private function buildSitemap()
+    protected function buildSitemap()
     {
         $this->logger->log(sprintf('Building sitemap with <comment>%s</comment> urls.', count($this->sitemap)));
 
@@ -262,7 +262,7 @@ class BuildCommand extends Command
      * @param string $filename
      * @param string $format
      */
-    private function write($path, $content, $format = 'html', $filename = 'index')
+    protected function write($path, $content, $format = 'html', $filename = 'index')
     {
         $directory = sprintf('%s/%s', $this->destination, trim($path, '/'));
         $file      = sprintf('%s.%s', $filename, $format);

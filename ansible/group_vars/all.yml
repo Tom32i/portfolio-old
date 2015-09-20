@@ -12,8 +12,8 @@ _env:  dev
 # Motd #
 ########
 
-elao_motd_template: template/elao.j2
-elao_motd:          California - 1993
+elao_motd_template: template/empty.j2
+elao_motd:          Phillip
 
 ############
 # Timezone #
@@ -167,26 +167,26 @@ _nginx_configs:
     config:
       - server_name: "{{ _app_host }}.dev"
       - root:       "{{ _app_dir }}/dist"
-      - listen:     "{{ ansible_eth1.ipv4.address }}:80"
+      #- listen:     "{{ ansible_eth1.ipv4.address }}:80"
       - access_log: "{{ elao_nginx_log_dir }}/static.access.log"
       - error_log:  "{{ elao_nginx_log_dir }}/static.error.log"
       - include:     conf.d/gzip
       - charset:    "UTF-8"
-
   # App live
   - file:     "live.{{ _app_host }}.conf"
     template: configs/server_{{ _env }}.conf.j2
     config:
       - server_name: "live.{{ _app_host }}.dev"
       - root:       "{{ _app_dir }}/web"
-      - listen:     "{{ ansible_eth1.ipv4.address }}:80"
+      #- listen:     "{{ ansible_eth1.ipv4.address }}:80"
       - access_log: "{{ elao_nginx_log_dir }}/live.access.log"
       - error_log:  "{{ elao_nginx_log_dir }}/live.error.log"
       - include:     conf.d/gzip
       - charset:    "UTF-8"
-      - location /:
+      - location ~ ^/(.*):
         - try_files: $uri /index.php$is_args$args
-        - include: conf.d/php_fpm_params
+      - location ~ ^/(index)\.php(/|$):
+        - include:  conf.d/php_fpm_params
 
 #######
 # Npm #

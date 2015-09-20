@@ -16,14 +16,14 @@ class Informator
      *
      * @var UrlGeneratorInterface
      */
-    private $urlGenerator;
+    protected $urlGenerator;
 
     /**
      * Application parameters
      *
      * @var array
      */
-    private $parameters;
+    protected $parameters;
 
     /**
      * Injecting dependencies

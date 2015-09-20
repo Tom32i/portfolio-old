@@ -16,14 +16,14 @@ class Pygments
      *
      * @var FileSystem
      */
-    private $files;
+    protected $files;
 
     /**
      * Temporary directory path
      *
      * @var string
      */
-    private $tmp;
+    protected $tmp;
 
     /**
      * Constructor

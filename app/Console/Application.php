@@ -19,7 +19,7 @@ class Application extends BaseApplication
      *
      * @var HttpKernelInterface
      */
-    private $kernel;
+    protected $kernel;
 
     /**
      * Constructor.

@@ -16,21 +16,21 @@ class Logger
      *
      * @var OutputInterface
      */
-    private $output;
+    protected $output;
 
     /**
      * Progress Bar
      *
      * @var ProgressBar
      */
-    private $progress;
+    protected $progress;
 
     /**
      * Logs
      *
      * @var array
      */
-    private $logs;
+    protected $logs;
 
     /**
      * Constructor

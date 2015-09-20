@@ -14,7 +14,7 @@ class Paginator
      *
      * @var array
      */
-    private $pages;
+    protected $pages;
 
     /**
      * Constructor

@@ -56,7 +56,7 @@ class MarkdownDecoder implements DecoderInterface
      *
      * @return array
      */
-    private function parseYaml($data)
+    protected function parseYaml($data)
     {
         return Yaml::parse($data, true);
     }
@@ -68,7 +68,7 @@ class MarkdownDecoder implements DecoderInterface
      *
      * @return string
      */
-    private function markdownify($data)
+    protected function markdownify($data)
     {
         $parser = new Parsedown();
 

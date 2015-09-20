@@ -21,14 +21,14 @@ class ContentConverterListener implements EventSubscriberInterface
      *
      * @var RouteCollection
      */
-    private $routes;
+    protected $routes;
 
     /**
      * Content repository
      *
      * @var ContentRepository
      */
-    private $repository;
+    protected $repository;
 
     /**
      * Constructor
