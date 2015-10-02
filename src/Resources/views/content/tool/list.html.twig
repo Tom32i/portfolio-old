@@ -1,0 +1,7 @@
+<div class="tools">
+    {% for tool in tools %}
+        <a class="tool" href="{{ tool.link }}" title="{{ tool.title }}" target="_blank">
+            {{ tool.content|raw }}
+        </a>
+    {% endfor %}
+</div>

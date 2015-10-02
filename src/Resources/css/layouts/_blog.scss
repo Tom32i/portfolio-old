@@ -1,0 +1,79 @@
+.blog {
+    .site-title .sub-title {
+        font-size: 88%;
+        letter-spacing: 5px;
+        padding-left: 8px;
+    }
+
+    .site-footer {
+        color: $grey-light;
+
+        hr {
+            margin: $gutter 0;
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-weight: $font-light;
+            line-height: 1em;
+        }
+
+        h1 { font-size: 1.8em; }
+        h2 { font-size: 1.4em; }
+
+        .about {
+            .link {
+                font-size: 1.2em;
+
+                .name {
+                    height: 20px;
+                    line-height: 20px;
+                    padding: 20px 0;
+                    display: block;
+                }
+
+                .avatar {
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    float: left;
+                    margin-right: $gutter/4;
+                }
+            }
+        }
+
+        .articles {
+            .latest {
+                padding-left: 0;
+                list-style: none;
+
+                li {
+                    margin: ($gutter/4) 0;
+                    @include clearfix;
+                }
+
+                time {
+                    color: darken($grey-light, 20%);
+                    font-size: 0.7em;
+                }
+            }
+        }
+    }
+
+    .container {
+        max-width: 740px;
+    }
+
+    /* Article list */
+
+    .article.preview {
+        margin: $gutter 0;
+
+        .title {
+            margin-bottom: 0;
+        }
+
+        .description {
+            margin: 0.5em 0;
+        }
+    }
+}

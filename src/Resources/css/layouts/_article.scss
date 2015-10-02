@@ -1,0 +1,120 @@
+.article {
+    h1, h2, h3, h4, h5 {
+        text-align: left;
+
+        a {
+            color: $grey;
+        }
+    }
+
+    h1 { font-weight: $font-bold; }
+    h2 { font-size: 1.6em; }
+    h3 { font-size: 1.4em; }
+    h4 { font-size: 1.2em; }
+    h5 { font-size: 1em; }
+
+    .header {
+        position: relative;
+        margin-top: 1em;
+        margin-bottom: 1em;
+
+        time {
+            color: $grey-light;
+            line-height: 2.8em;
+        }
+
+        .title {
+            margin: 0;
+        }
+    }
+
+    .content {
+        h1, h2, h3, h4, h5 {
+            margin-top: 1.8em;
+            margin-bottom: 1.2em;
+            font-weight: $font-bold;
+        }
+
+        p, ul, ol {
+            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+            line-height: 1.5em;
+            font-size: 1.3em;
+            font-style: normal;
+        }
+
+        blockquote {
+            position: relative;
+            font-size: 120%;
+
+            p:first-child:before,
+            p:last-child:after {
+                font-size: 1.4em;
+                line-height: 0em;
+                color: $grey-light;
+            }
+
+            p:first-child:before {
+                content: '\201C';
+                margin-right: 0.2em;
+            }
+
+            p:last-child:after {
+                content: '\201D';
+                margin-left: 0.2em;
+            }
+        }
+
+        p > code {
+            background-color: darken($grey-lighter, 10%);
+            color: $black;
+            border-radius: 2px;
+            padding: 0px 3px;
+            word-break: break-all;
+        }
+
+        .highlight {
+            padding: $gutter/2;
+            line-height: 1.2em;
+        }
+
+        img {
+            width: 100%;
+        }
+
+        h1, h2, h3, h4, h5 {
+            &:first-child {
+                margin-top: 0;
+            }
+        }
+    }
+
+    .footer {
+        text-align: center;
+
+        h1 {
+            font-size: 1.8em;
+            font-weight: $font-light;
+            line-height: 1em;
+            text-align: center;
+        }
+
+        .comments {
+            text-align: center;
+            margin: $gutter 0;
+
+            .enable {
+                border-radius: 4px;
+                text-align: center;
+                background-color: $grey;
+                color: $white;
+                border: none;
+                padding: $gutter/4 $gutter/2;
+
+                &:hover {
+                    background-color: $black;
+                }
+            }
+        }
+
+    }
+}

@@ -1,0 +1,25 @@
+<link rel="canonical" href="{{ canonical }}">
+
+<meta name="author" content="{{ parameters.meta.author|default('Thomas Jarrand') }}">
+<meta name="description" content="{{ parameters.meta.description|default('Thomas Jarrand') }}">
+<meta name="keywords" content="{{ parameters.meta.keywords|default([])|join(' ') }}">
+
+{% block facebook %}
+    <meta property="og:url" content="{{ canonical }}">
+    <meta property="og:title" content="{{ parameters.meta.title|default(title) }}">
+    <meta property="og:site_name" content="{{ app.title|default('Thomas Jarrand') }}">
+    <meta property="og:description" name="description" content="{{ app.description|default('Thomas Jarrand') }}">
+    {% if parameters.meta.type|default(false) %}
+        <meta property="og:type" content="{{ parameters.meta.type }}" />
+    {% endif %}
+{% endblock %}
+
+{% block twitter %}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="{{ parameters.meta.twitter }}" />
+    <meta name="twitter:title" content="{{ title }}" />
+    <meta name="twitter:description" content="{{ parameters.meta.description|default() }}" />
+    {% if parameters.meta.image|default(false) %}
+        <meta name="twitter:image" content="{{ parameters.meta.image }}" />
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+.methods {
+    @extend .row;
+
+    .method {
+        @extend .column;
+        width: percentage(1/3);
+
+        .title {
+            font-weight: 400;
+
+            &.blue > em { color: $blue; }
+            &.green > em { color: $green; }
+            &.purple > em { color: $purple; }
+            &.red > em { color: $red; }
+        }
+    }
+}

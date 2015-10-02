@@ -1,0 +1,67 @@
+/* Typography */
+body {
+    background-color: $grey-lighter;
+    font-family: 'Source Sans Pro', sans-serif;
+    color: $black;
+    font-size: 16px;
+}
+
+h1, h2, h3, h4, h5 {
+    color: $grey;
+    font-weight: $font-bold;
+    line-height: 1.2em;
+}
+
+h1 {
+    font-size: $font-size-h1;
+    text-align: center;
+    font-weight: 200;
+}
+
+h2 {
+    font-size: $font-size-h2;
+    font-weight: 400;
+}
+
+a {
+    &, &:visited, &:active {
+        color: $purple;
+        text-decoration: none;
+    }
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+img, svg {
+    max-width: 100%;
+    height: auto;
+    margin: 0px auto;
+    text-align: center;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid $grey-light;
+    color: $grey-light;
+    height: 0;
+    margin: ($gutter * 1.5) 0;
+
+    &[class^="icon-"]:before,
+    &[class*=" icon-"]:before  {
+        text-align: center;
+        background-color: $grey-lighter;
+        display: block;
+        margin: -$hr-icon-height/2 auto 0;
+        width: $hr-icon-height * 2;
+        height: $hr-icon-height;
+        font-size: $hr-icon-height;
+        line-height: $hr-icon-height;
+    }
+}
+
+[class^="icon-"]:before,
+[class*=" icon-"]:before  {
+    text-decoration: none;
+}

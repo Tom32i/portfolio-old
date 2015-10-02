@@ -1,0 +1,32 @@
+.languages {
+    @extend .row;
+
+    .language {
+        @extend .column;
+        width: 25%;
+        text-align: center;
+
+        .title {
+            color: $grey-lighter;
+            font-weight: 200;
+            font-size: $font-size-h2;
+            line-height: 0;
+            width: 100%;
+            padding: 0;
+            margin: $gutter/2 auto;
+            border-radius: 50%;
+            max-width: 200px;
+
+            &:before, &:after  {
+                content: "";
+                padding-top: 50%;
+                display: block;
+            }
+
+            &.blue { background-color: $blue; }
+            &.green { background-color: $green; }
+            &.purple { background-color: $purple; }
+            &.red { background-color: $red; }
+        }
+    }
+}

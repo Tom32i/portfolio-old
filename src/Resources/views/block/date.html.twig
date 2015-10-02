@@ -1,0 +1,5 @@
+{% macro ago(date) %}
+<time datetime="{{ date|date('c') }}" class="icon-clock" title="{{ date|date('Y-m-d') }}">
+    {{ date|date('Y-m-d') }}
+</time>
+{% endmacro %}

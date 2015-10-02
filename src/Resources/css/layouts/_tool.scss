@@ -1,0 +1,27 @@
+.tools {
+    @extend .row;
+
+    .tool {
+        @extend .column;
+        width: percentage(1/4);
+        text-align: center;
+        margin: $gutter/2 0;
+
+        p {
+            padding: 0;
+            margin: 0;
+        }
+
+        &:not(:hover) svg {
+            path, rect, polygon {
+                fill: $grey;
+            }
+
+            @for $i from 0 through 10 {
+                .color-#{$i * 10}{
+                    opacity: $i/10;
+                }
+            }
+        }
+    }
+}

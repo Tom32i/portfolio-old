@@ -1,0 +1,40 @@
+{% extends 'layout.html.twig' %}
+
+{% import 'block/card.html.twig' as card %}
+
+{% block meta %}
+    {{ parent() }}
+    {{ card.twitter(parameters.meta.title, parameters.meta.description) }}
+{% endblock %}
+
+{% block content %}
+    <hr class="icon-anchor">
+
+    <h1>I WRITE CODE</h1>
+    {{ include('content/language/list.html.twig') }}
+
+    <hr class="icon-movie">
+
+    <h1>HOW I WORK</h1>
+    {{ include('content/method/list.html.twig') }}
+
+    <hr class="icon-tea">
+
+    <h1>5 YEARS OF LOVE</h1>
+    {{ include('content/project/list.html.twig') }}
+
+    <hr class="icon-bike">
+
+    <h1>ACHIEVEMENTS</h1>
+    {{ include('content/badge/list.html.twig') }}
+
+    <hr class="icon-mustache">
+
+    <h1>MY BEST FRIENDS</h1>
+    {{ include('content/tool/list.html.twig') }}
+{% endblock %}
+
+{% block footer %}
+    <h1>GET IN TOUCH!</h1>
+    {{ include('content/link/list.html.twig') }}
+{% endblock %}

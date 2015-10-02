@@ -1,0 +1,7 @@
+<ul class="latest">
+    {% for article in articles %}
+        <li>
+            {{ include('content/article/link.html.twig') }}
+        </li>
+    {% endfor %}
+</ul>

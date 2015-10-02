@@ -1,0 +1,35 @@
+{% extends 'blog/layout.html.twig' %}
+
+{% import 'block/date.html.twig' as date %}
+
+{% set title       = article.title  ~ ' - ' ~ parameters.meta.blog.title %}
+{% set description = article.description %}
+
+{% block content %}
+    <hr class="icon-pen">
+    <article class="article">
+        <header class="header">
+            <h1 class="title">
+                {{ article.title }}
+            </h1>
+            {{ date.ago(article.date) }}
+        </header>
+        <div class="content">
+            {{ article.content|raw }}
+        </div>
+        <footer class="footer">
+            <hr class="icon-talk">
+            <h1>THANK YOU FOR READING!</h1>
+            <div
+                id="disqus_thread"
+                data-shortname="thomas-jarrand-tech-blog"
+                data-identifier="{{ article.slug }}"
+                data-title="{{ article.title }}"
+                data-url="{{ url("article", {article: article.slug}) }}"
+                class="comments"
+            >
+                <button type="button" class="enable">Any questions or comments?</button>
+            </div>
+        </footer>
+    </article>
+{% endblock %}

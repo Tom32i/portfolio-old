@@ -1,0 +1,32 @@
+{
+    "name": "tom32i-portfolio",
+    "license": "MIT",
+    "type": "project",
+    "description": "Thomas Jarrand Portfolio",
+    "homepage": "http://thomas.jarrand.fr/",
+    "authors": [
+        {
+            "name": "Thomas Jarrand",
+            "email": "thomas.jarrand@gmail.com",
+            "homepage": "http://thomas.jarrand.fr",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Tom32i\\Portfolio\\": "src"
+        }
+    },
+    "require": {
+        "php": ">=5.6",
+        "phpillip/phpillip": "~1.0"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    },
+    "config": {
+        "bin-dir": "bin"
+    }
+}

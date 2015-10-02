@@ -1,0 +1,8 @@
+{% import 'block/date.html.twig' as date %}
+
+{% block link %}
+<a href='{{ path('article', {'article': article.slug}) }}'>
+    {{ article.title }}
+</a>
+{{ date.ago(article.date) }}
+{% endblock %}

@@ -1,0 +1,146 @@
+/* < 768px */
+.site-title {
+    font-size: $font-size-h1 * 0.9;
+
+    .sub-title {
+        font-size: 58.5%;
+    }
+}
+
+h1, h2, h3, h4, h5 {
+    line-height: 1.1em;
+}
+
+h1 {
+    font-size: $font-size-h1 * 0.8;
+
+}
+
+h2 {
+    font-size: $font-size-h2 * 0.8;
+}
+
+.article .content {
+    p, ul, ol {
+        line-height: 1.4em;
+        font-size: 1.2em;
+    }
+
+    pre, img {
+        margin-left: -$gutter/2;
+        margin-right: -$gutter/2;
+    }
+
+    .highlight {
+        padding-left: $gutter;
+        padding-right: $gutter;
+    }
+}
+
+.tools .tool {
+    width: percentage(1/2);
+    margin: $gutter/3 0;
+
+    svg {
+        max-height: 45px;
+    }
+}
+
+.projects {
+    @include row;
+
+    .project {
+        @include column;
+        width: percentage(1/5);
+        padding-right: ($gutter/2) + 40px;
+        padding-left: ($gutter/2) + 40px;
+
+        .picture {
+            display: block;
+            margin: 0 auto;
+            display: block;
+            text-align: center;
+            width: 100%;
+
+            img {
+                max-height: 100px;
+                display: block;
+                margin: 0 auto;
+            }
+        }
+
+        .content {
+            .side {
+                margin-top: $gutter/2;
+
+                & > * {
+                    display: block;
+                    line-height: 1.4em;
+                    margin: $gutter/8;
+                }
+            }
+        }
+    }
+    &.slider-container .control {
+        padding-top: 124px;
+    }
+}
+
+.methods .method {
+    padding-right: ($gutter/2) + 40px;
+    padding-left: ($gutter/2) + 40px;
+}
+
+.languages.slider-container .control {
+    padding-top: 110px;
+}
+
+.methods.slider-container .control {
+    padding-top: 27px;
+}
+
+.badges.slider-container .control {
+    padding-top: 115px;
+}
+
+.links .link {
+    width: percentage(1/3);
+}
+
+/* Sliders */
+.slider-container {
+    position: relative;
+    overflow: hidden;
+
+    .control {
+        display: block;
+        position: absolute;
+        height: 100%;
+        padding: 0 $gutter/2;
+        font-size: $gutter/2;
+        line-height: $gutter/2;
+        color: $grey-light;
+        text-align: center;
+        box-sizing: border-box;
+        cursor: pointer;
+        transition: opacity 300ms;
+
+        &:hover {
+            color: $grey;
+        }
+
+        &.hide {
+            display: none;
+        }
+
+        &.icon-left {
+            left: 0;
+            padding-right: $gutter;
+        }
+
+        &.icon-right {
+            right: 0;
+            padding-left: $gutter;
+        }
+    }
+}

@@ -1,0 +1,44 @@
+{% extends 'layout.html.twig' %}
+
+{% import 'block/card.html.twig' as card %}
+
+{% block body_class 'blog' %}
+
+{% block meta %}
+    {{ parent() }}
+    {{ card.twitter(title, description) }}
+    <link title="{{ parameters.meta.blog.title }}" href="{{ url('blog_rss') }}"type="application/rss+xml" rel="alternate"/>
+{% endblock %}
+
+{% block header %}
+    <header class="site-title container">
+        <a href="{{ path('blog') }}">
+            THOMAS <strong>JARRAND</strong>
+            <span class="sub-title">WEB TECH DIARY</span>
+        </a>
+    </header>
+{% endblock %}
+
+{% block footer %}
+    <div class="row">
+        {% block about %}
+            <div class="about">
+                <h2>About the author</h2>
+                <a href="/" class="link">
+                    <img class="avatar" src="/img/tom32i.jpg">
+                    <span class="name">Tom32i</span>
+                </a>
+            </div>
+        {% endblock %}
+        {% block more %}
+            <div class="articles">
+                <h2>
+                    <a href="{{ path('blog') }}">
+                        Latest tech articles
+                    </a>
+                </h2>
+                {{ render(url('blog_latest')) }}
+            </div>
+        {% endblock %}
+    </div>
+{% endblock %}

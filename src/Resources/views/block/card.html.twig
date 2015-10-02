@@ -1,0 +1,28 @@
+
+{# site: The Twitter @username the card should be attributed to. Required for Twitter Card analytics.  #}
+{# title: Title should be concise and will be truncated at 70 characters.  #}
+{# description: A description that concisely summarizes the content of the page, as appropriate for presentation within a Tweet. Do not re-use the title text as the description, or use this field to describe the general services provided by the website. Description text will be truncated at the word to 200 characters.  #}
+
+{% macro twitter(title, description, image, site) %}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="{{ site|default(parameters.meta.twitter) }}" />
+    <meta name="twitter:title" content="{{ title }}{#|truncate(70)#}" />
+    <meta name="twitter:description" content="{{ description }}" />
+    <meta name="twitter:image" content="{{ url('homepage') ~ 'thomas-jarrand.png' }}" />
+{% endmacro %}
+
+{# title: A clear title without branding or mentioning the domain itself. #}
+{# site_name: Provide a site name, e.g. "My Favorite News" #}
+{# url: A URL with no session id or extraneous parameters. All shares on Facebook will use this as the identifying URL for this article. #}
+{# description: A clear description, at least two sentences long. #}
+{# type: The type of object, eg article #}
+{% macro facebook(title, site_name, description, type, url) %}
+    <meta property="og:title" content="{{ title }}">
+    <meta property="og:site_name" content="{{ site_name }}">
+    <meta property="og:url" content="{{ url|default(canonical) }}">
+    <meta property="og:description" name="description" content="{{ description }}">
+    <meta name="og:image" content="{{ url('homepage') ~ 'thomas-jarrand.png' }}" />
+    {% if type|default(false) %}
+        <meta property="og:type" content="{{ type }}" />
+    {% endif %}
+{% endmacro %}
