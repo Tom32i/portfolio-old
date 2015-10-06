@@ -26,12 +26,20 @@ help:
 #########
 
 ## Setup environment & Install application
-setup: setup-vagrant
+setup: provision
 	vagrant ssh -c 'cd /srv/app && make install'
 
-setup-vagrant:
+#############
+# Provision #
+#############
+
+## Provision environment
+provision: provision-vagrant
+
+provision-vagrant:
 	ansible-galaxy install -r ansible/roles.yml -p ansible/roles -f
-	vagrant up --provision
+	vagrant up --no-provision
+	vagrant provision
 
 ###########
 # Install #
@@ -85,7 +93,8 @@ run-server:
 
 ## Publish
 publish:
-	vagrant ssh -c 'cd /srv/app && make build@prod'
+	#vagrant ssh -c 'cd /srv/app && make build@prod'
+	make build@prod
 	chmod -R 755 dist
 	rsync -arzv --delete dist/* dédié:/home/tom32i/sites/portfolio
 
