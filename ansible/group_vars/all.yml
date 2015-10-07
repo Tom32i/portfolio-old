@@ -11,7 +11,7 @@ _env:      dev
 ########
 
 elao_motd_template: template/empty.j2
-elao_motd:          Phillip
+elao_motd:          Portfolio
 
 ############
 # Timezone #
@@ -37,7 +37,7 @@ elao_apt_repositories: []
 elao_apt_preferences:
   - git@backports
   - ~@dotdeb:100
-  - php@dotdeb_php56
+  - php@dotdeb
   - nginx@nginx
   - nodejs@nodesource_0_12
 
@@ -101,10 +101,8 @@ elao_logio_config_harvester:
 # Php #
 #######
 
-elao_php_version: 5
-
+elao_php_version: 7.0
 elao_php_sapis: ['cli', 'fpm']
-
 elao_php_fpm_pools_exclusive: true
 elao_php_fpm_pools:
   - file:     www.conf
@@ -112,7 +110,7 @@ elao_php_fpm_pools:
 
 elao_php_extensions:
   # Dev
-  - xdebug
+  #- xdebug
   # Symfony
   - intl
   - curl
@@ -147,7 +145,7 @@ elao_php_applications:
 elao_nginx_config_template: config/http_{{ _env }}.conf.j2
 
 elao_nginx_configs_exclusive: true
-_all_nginx_configs:
+elao_nginx_configs:
   # Php fpm
   - file:     php_fpm_params
     template: configs/php_fpm_params_{{ _env }}.j2
@@ -171,11 +169,11 @@ _all_nginx_configs:
       - include:     conf.d/gzip
       - charset:    "UTF-8"
   # App live
-  - file:     "live.{{ _app_host }}.conf"
+  - file:     "live_{{ _app_host }}.conf"
     template: configs/server_{{ _env }}.conf.j2
     config:
       - server_name: "live.{{ _app_host }}.dev"
-      #- root:       "{{ _app_dir }}"
+      - root:       "{{ _app_dir }}/dist"
       #- listen:     "{{ ansible_eth1.ipv4.address }}:80"
       - access_log: "{{ elao_nginx_log_dir }}/live.access.log"
       - error_log:  "{{ elao_nginx_log_dir }}/live.error.log"
@@ -217,9 +215,19 @@ elao_supervisor_configs:
     template: configs/program_{{ _env }}.conf.j2
     config:
       - gulp:
-        - command:         gulp watch
+        - command:         make watch
         - directory:       "{{ _app_dir }}"
         - user:            "vagrant"
         - autorestart:     true
         - stdout_logfile:  "{{ elao_supervisor_log_dir }}/app-worker-gulp.log"
+        - redirect_stderr: true
+  - file:     live.conf
+    template: configs/program_{{ _env }}.conf.j2
+    config:
+      - live:
+        - command:         make run
+        - directory:       "{{ _app_dir }}"
+        - user:            "vagrant"
+        - autorestart:     true
+        - stdout_logfile:  "{{ elao_supervisor_log_dir }}/app-worker-live.log"
         - redirect_stderr: true

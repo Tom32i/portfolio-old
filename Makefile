@@ -103,9 +103,9 @@ publish:
 ##########
 
 ## Launch dev server
-build-start:
+supervisor-start:
 	sudo supervisorctl start all
 
 ## Launch dev server
-build-stop:
+supervisor-stop:
 	sudo supervisorctl stop all

@@ -76,7 +76,7 @@
 
 - src:     https://github.com/ElaoInfra/ansible-role-php
   name:    elao.php
-  version: origin/1.0
+  version: origin/php7
 
 - src:     https://github.com/ElaoInfra/ansible-role-composer
   name:    elao.composer
