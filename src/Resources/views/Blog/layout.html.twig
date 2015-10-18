@@ -7,7 +7,7 @@
 {% block meta %}
     {{ parent() }}
     {{ card.twitter(title, description) }}
-    <link title="{{ parameters.meta.blog.title }}" href="{{ url('blog_rss') }}"type="application/rss+xml" rel="alternate"/>
+    <link title="{{ parameters.meta.blog.title }}" href="{{ url('blog_rss') }}" type="application/rss+xml" rel="alternate"/>
 {% endblock %}
 
 {% block header %}
@@ -25,7 +25,7 @@
             <div class="about">
                 <h2>About the author</h2>
                 <a href="/" class="link">
-                    <img class="avatar" src="/img/tom32i.jpg">
+                    <img class="avatar" src="/img/tom32i.jpg" alt="Tom32i">
                     <span class="name">Tom32i</span>
                 </a>
             </div>
