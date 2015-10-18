@@ -26,12 +26,20 @@ help:
 #########
 
 ## Setup environment & Install application
-setup: setup-vagrant
+setup: provision
 	vagrant ssh -c 'cd /srv/app && make install'
 
-setup-vagrant:
+#############
+# Provision #
+#############
+
+## Provision environment
+provision: provision-vagrant
+
+provision-vagrant:
 	ansible-galaxy install -r ansible/roles.yml -p ansible/roles -f
-	vagrant up --provision
+	vagrant up --no-provision
+	vagrant provision
 
 ###########
 # Install #
@@ -94,9 +102,9 @@ publish:
 ##########
 
 ## Launch dev server
-build-start:
+supervisor-start:
 	sudo supervisorctl start all
 
 ## Launch dev server
-build-stop:
+supervisor-stop:
 	sudo supervisorctl stop all

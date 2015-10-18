@@ -55,7 +55,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Network
     config.vm.network 'private_network', type: 'dhcp'
-    config.vm.network :forwarded_port, guest: 80, host: 8080
 
     # Ssh
     config.ssh.forward_agent = true
