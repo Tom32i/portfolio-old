@@ -73,19 +73,24 @@ class BlogController
         return [
             'title'       => $app['parameters']['meta']['blog']['title'],
             'description' => $app['parameters']['meta']['blog']['description'],
-            'webmaster'   => 'thomas.jarrand@gmail.com',
+            'webmaster'   => [
+                'email' => 'thomas.jarrand@gmail.com',
+                'name'  => 'Thomas Jarrand',
+            ],
             'items'       => array_map(
                 function ($article) use ($app){
+                    $url = $app['url_generator']->generate(
+                        'article',
+                        ['article' => $article['slug']],
+                        UrlGeneratorInterface::ABSOLUTE_URL
+                    );
+
                     return [
                         'title'       => $article['title'],
                         'description' => $article['description'],
-                        'guid'        => $article['slug'],
                         'pubDate'     => $article['date'],
-                        'link'        => $app['url_generator']->generate(
-                            'article',
-                            ['article' => $article['slug']],
-                            UrlGeneratorInterface::ABSOLUTE_URL
-                        )
+                        'guid'        => $url,
+                        'link'        => $url
                     ];
                 },
                 $articles
