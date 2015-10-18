@@ -93,8 +93,7 @@ run-server:
 
 ## Publish
 publish:
-	#vagrant ssh -c 'cd /srv/app && make build@prod'
-	make build@prod
+	vagrant ssh -c 'cd /srv/app && make build@prod'
 	chmod -R 755 dist
 	rsync -arzv --delete dist/* dédié:/home/tom32i/sites/portfolio
 
