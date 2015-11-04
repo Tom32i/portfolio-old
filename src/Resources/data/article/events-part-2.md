@@ -1,43 +1,13 @@
 ---
-date: "2015-10-27 10:00:00"
-tags: ["Symfony", "Doctrine", "Event", "Kernel"]
-title: "Clean and powerful event workflow"
+date: "2015-10-27 10:00:01"
+tags: ["Symfony", "Doctrine", "Event", "Doctrine"]
+title: "Clean and powerful event workflow - Part II"
 description: "How to write a strong and clean event workflow with Symfony and Doctrine."
 ---
 
-## About actions and consequences
-
-It's monday and your client tells you:
-
-> When a new user register, then the app should send a notification to the administrator.
-
-The most straight forward way to implement that in Symfony is to write code that _create an admin notification_ in the controller that _successfully registered a new user_.
-
-- But what happens when the user is created from elsewhere, like a CRON import task?
-- What if you client needs to add other actions to perform on user registration?
-- Why does the user get an error if the code that creates the admin notification fails and throws an exception?
-
-All these problem appear when you didn't properly separated __actions__ and __consequences__ in your application.
-
-# Events to the rescue
-
-The best way to organize actions that triggers consequences in you app are __events__.
-
-It allows you to separate actions and consequences:
-
-- __Define a domain action:__ Create an Event object and name it
-- __Define a domain consequence:__ Create a Listener for that Event.
-- __Notifing your app that an action occured:__ Dispatch the corresponding event.
-
-## Events in Symfony
-
-Fortunately Symfony provides [an event system](http://symfony.com/doc/current/components/event_dispatcher/introduction.html).
-
-Events are used in the heart of Symfony: the HTTP Kernel is organised around Kernel Events such as _kernel.request_,  _kernel.response_ and  _kernel.terminate_.
-
 ## Doctrine events
 
-When you work with Doctrine Entities and an action altering the data (create, update, delete) triggers one or more reaction: you're likely to rely on Doctrine Events.
+When you work with Doctrine Entities and you need to trigger one or more reaction when the data is changed (create, update, delete): you're likely to rely on Doctrine Events.
 
 Indeed Doctrine provide a convenient way to watch for events occuring on the data. I'm talking about the [LifeCycle Events](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#lifecycle-events) and the associated [Listeners and Subscribers](http://symfony.com/doc/current/cookbook/doctrine/event_listeners_subscribers.html).
 
@@ -47,13 +17,15 @@ This is not a separation of actions and consequences!
 
 Also Doctrine listeners and subscribers are not Symfony listeners and subscribers, it would be better to stick to one unique event system in you app.
 
-And there's the problem of persistence, Doctrine events are too tied to the flush process: you can receive an "UpdateEvent" and later learn that the flush did'nt go well, so the update was'nt persisted to the database after all.
+And there's the problem of persistence, Doctrine events are too tied to the flush process: you can receive an "UpdateEvent" and later learn that the flush did'nt go well, so the update wasn't persisted to the database after all.
 
-For all these reason, I recommand that you only use Doctrine events as a source of information and rely on Symfony Events to code your domain actions and consequences.
+For all these reason, I recommand that you only use Doctrine events as a __source of information__ and rely on Symfony Events to code your domain actions and consequences.
 
-So here's how I design my events workflowto be clean and efficient.
+So here's how I design my events workflow to be clean and efficient.
 
 ## Create your domain events
+
+
 
 ``` php
 <?php
@@ -119,6 +91,10 @@ class ModelEvent extends Event
 }
 ```
 
+## Agregating Doctrine Events
+
+### Update trick
+
 ``` php
 <?php
 
@@ -173,10 +149,6 @@ class ModelChangeEvent extends ModelEvent
     }
 }
 ```
-
-## Agregating Doctrine Events
-
-### Update trick
 
 ### Delete trick
 
