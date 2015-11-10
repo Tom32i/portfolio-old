@@ -1,7 +1,7 @@
 ---
 date: "2015-10-27 10:00:00"
 tags: ["Symfony", "Event", "Kernel"]
-title: "Clean and powerful event workflow - Part I"
+title: "Symfony event workflow - Part I"
 description: "How to write a strong and clean event workflow with Symfony and Doctrine."
 ---
 
@@ -21,9 +21,7 @@ All these problem appear when you didn't properly separated __actions__ and __co
 
 # Events to the rescue
 
-The best way to organize actions that triggers consequences in you app are __events__.
-
-It allows you to separate actions and consequences:
+The best way to organize actions that triggers consequences in you app are __events__ and __listeners__:
 
 - __Define a domain action:__ Create an Event object and name it
 - __Define a domain consequence:__ Create a Listener for that Event.
@@ -31,43 +29,45 @@ It allows you to separate actions and consequences:
 
 ## Events in Symfony
 
-Fortunately Symfony provides [an event system](http://symfony.com/doc/current/components/event_dispatcher/introduction.html).
+Fortunately Symfony comes with [an event system](http://symfony.com/doc/current/components/event_dispatcher/introduction.html).
 
-Events are used in the heart of Symfony: the HTTP Kernel is organised around Kernel Events such as _kernel.request_,  _kernel.response_ and  _kernel.terminate_.
+Events are used in the heart of Symfony: the HTTP Kernel itself is organised around Kernel Events such as _kernel.request_,  _kernel.response_ and  _kernel.terminate_.
 
 ## Create your domain events
 
-Your domain events are meant to transport any relevant information about what happened. They can be anything, event an empty class. The only requirement is to implement `Symfony\Component\EventDispatcher\Event`.
+Your domain events are meant to transport any relevant information about what happened. They can be anything, even an empty class. The only requirement is to extends `Symfony\Component\EventDispatcher\Event`.
+
+[See full documentation](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#creating-an-event-object)
 
 ## Setup your workflow
 
-Declare dispatchers and listeners
+Again, Symfony's documentation give you everything you need to setup your event workflow:
+
+- [Create a Dispactcher](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#the-dispatcher)
+- [Define your Subscribers](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#using-event-subscribers)
+
+# Separating concerns
+
+Now that you followed the doc, you have a working event workflow.
+But we did't yet properly separated concerns.
 
 ## Consider working after the client is served
 
-Events in Symfony are synchronous, that means When you perform an action directly in a listener, the listener code is executed right when the event is fired.
+Events in Symfony are __synchronous__, that means when you perform an action directly in a listener, the listener code is executed right when the event is fired.
 
 So if an event is fired during the Request process, the corresponding action also happens during the processing of the request.
 
 Indeed Symfony will wait for every listeners to be complete before resuming the processing of the Request, and return a Response to the client.
 
-So if you have an event trigering a 1 second process in a 200ms request, your client will wait 1,2 secondes for the response.
+So if you have an event trigering a 1 second process in a 200ms request, your client will wait 1,2 secondes for the response. Worst, the trigerred process could fail and throw an exception, leaving your client with a 500 error.
 
 In most case, you don't need the result of the process to send the Response to the client!
 
-### Delay the execution of your processes
+## Delay the execution of your processes
 
-You need your time-consuming process to run when the Response has been sent.
+You need your _consequence_ process to run __after__ the Response has been sent.
 
-> Just use the `Terminate` event!
-
-- kernel.request: a Request hit the application
-    - Request processing is modifing the datas and firing Doctrine events
-    - Doctrine listener agregate events
-- kernel.response: a Response is there!
-- kernel.terminate: the Response was sent
-    - Dispatching domain events
-    - Domain listeners operating domain processes
+One convenient solution is to pile events in a queue instead of dispatching them directly. Then wait for the Response to be sent and dispach every event waiting in the queue.
 
 ### Piling events in a queue
 
@@ -76,14 +76,16 @@ Let's create an Event Dispatcher that wait for the Kernel event _terminate_ to d
 ```php
 <?php
 
-use Acme\EventBundle\Dispatcher\EventDispatcher;
+namespace Acme\EventBundle\Dispatcher;
+
 use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Dispatch events on Kernel Terminate
  */
-class DelayedEventDispatcher extends ContainerAwareEventDispatcher implements EventSubscriberInterface
+class DelayedEventDispatcher extends ContainerAwareEventDispatcher implements EventDispatcherInterface, EventSubscriberInterface
 {
     /**
      * Queued events
@@ -141,10 +143,19 @@ Declare the delayed event dispatcher as a _service_ and a _subscriber_.
 
 ```yaml
 services:
-    # Event Dispatcher
-    acme_event_bundle.dispatcher:
-        class:  "Acme\EventBundle\Dispatcher\EventDispatcher"
+    # Delayed Event Dispatcher
+    acme_event_bundle.delayed_dispatcher:
+        class:  "Acme\EventBundle\Dispatcher\DelayedEventDispatcher"
         parent: "event_dispatcher"
         tags:
             - { name: "kernel.event_subscriber" }
 ```
+
+Now all you need to do is to dispatch your domain events through this DelayedDispatcher!
+
+Since this dispatcher only dispatches events in _kernel.terminate_, your listeners and subscribers will run processes after the client is served.
+
+## How about Doctrine events?
+
+Doctrine comes with its own event system, how can we integrate it in this workflow?
+We'll see that in my next post "Symfony event workflow - Part II", stay tuned.
