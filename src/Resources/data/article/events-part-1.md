@@ -1,161 +1,90 @@
 ---
-date: "2015-10-27 10:00:00"
+date: "2015-11-12 10:00:00"
 tags: ["Symfony", "Event", "Kernel"]
-title: "Symfony event workflow - Part I"
-description: "How to write a strong and clean event workflow with Symfony and Doctrine."
+title: "Symfony events I - The basics"
+description: "How to write an event workflow with Symfony"
 ---
 
-## About actions and consequences
+_Already familiar with Symfony Events? [Skip the basics](#going-further)_
 
 It's monday and your client tells you:
 
-> When a new user register, then the app should send a notification to the administrator.
+> When a user places an order, the app should send a notification to the administrator.
 
-The most straight forward way to implement that in Symfony is to write code that _create an admin notification_ in the controller that _successfully registered a new user_.
+The most straight forward way to implement that in Symfony is to go in the controller or service that _places the order_ (the action) and write code that _notifies the administrator_ (the consequence).
 
-- But what happens when the user is created from elsewhere, like a CRON import task?
-- What if you client needs to add other actions to perform on user registration?
-- Why does the user get an error if the code that creates the admin notification fails and throws an exception?
+But structuring an application like that, the code handling orders would be very coupled to the one responsible for notifications.
 
-All these problem appear when you didn't properly separated __actions__ and __consequences__ in your application.
+Altough this two concerns are _linked_, they should not be _coupled_.
+This will make an application difficult to maintain and to evolve.
 
-# Events to the rescue
+## Events to the rescue
 
-The best way to organize actions that triggers consequences in you app are __events__ and __listeners__:
+Events are messages that link actions to consequences in your application while keeping them __independant__.
 
-- __Define a domain action:__ Create an Event object and name it
-- __Define a domain consequence:__ Create a Listener for that Event.
-- __Notifing your app that an action occured:__ Dispatch the corresponding event.
+Dispatching an event is identifying a meaningful domain action.
+The event provides an entry point for every consequence that want to react to this action.
 
-## Events in Symfony
+Given a highly coupled code:
 
-Fortunately Symfony comes with [an event system](http://symfony.com/doc/current/components/event_dispatcher/introduction.html).
+![](/img/article/coupled.svg)
 
-Events are used in the heart of Symfony: the HTTP Kernel itself is organised around Kernel Events such as _kernel.request_,  _kernel.response_ and  _kernel.terminate_.
+Refactoring the same process with events would look like:
 
-## Create your domain events
+![](/img/article/decoupled.svg)
 
-Your domain events are meant to transport any relevant information about what happened. They can be anything, even an empty class. The only requirement is to extends `Symfony\Component\EventDispatcher\Event`.
+Now the two processes are independant and linked by an event.
 
-[See full documentation](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#creating-an-event-object)
+### The benefices of separating concerns
 
-## Setup your workflow
+__Team work:__
+The developer working on the Notifier feature won't depend on the team that provide the orders workflow. That can work in parallel, or not, and avoid being slowed down by conflicts.
 
-Again, Symfony's documentation give you everything you need to setup your event workflow:
+__Evolutivity:__
+It's very easy to code a new _consequence_ without affecting the _action_.
+You can plug literally any process on your domain event: log, export datas, rebluid a cache, send emails, ...
 
-- [Create a Dispactcher](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#the-dispatcher)
-- [Define your Subscribers](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#using-event-subscribers)
+__Flexibilty:__
+Consequences can be activated/desactivated be configuration or context very easily by adding or not a listener.
 
-# Separating concerns
+## Getting it done
 
-Now that you followed the doc, you have a working event workflow.
-But we did't yet properly separated concerns.
+Fortunately Symfony comes with a nice [Event Dispatcher component](http://symfony.com/doc/current/components/event_dispatcher/introduction.html).
 
-## Consider working after the client is served
+The documentation is thorough and gives complete implementation examples, you should read it.
 
-Events in Symfony are __synchronous__, that means when you perform an action directly in a listener, the listener code is executed right when the event is fired.
+Once your familiar with the tool,s design your workflow by identifying your domain _actions_ and _consequence_ and naming your domain _events_.
 
-So if an event is fired during the Request process, the corresponding action also happens during the processing of the request.
+Finally, proceed with the implemenation:
 
-Indeed Symfony will wait for every listeners to be complete before resuming the processing of the Request, and return a Response to the client.
+### Create and dispatch domain events
 
-So if you have an event trigering a 1 second process in a 200ms request, your client will wait 1,2 secondes for the response. Worst, the trigerred process could fail and throw an exception, leaving your client with a 500 error.
+Your domain events are messages meant to transport any relevant information about what happened. They should be emitted from your controllers and services where the action occurs.
 
-In most case, you don't need the result of the process to send the Response to the client!
+The only requirement for an event is to be an instance of `Symfony\Component\EventDispatcher\Event`.
 
-## Delay the execution of your processes
-
-You need your _consequence_ process to run __after__ the Response has been sent.
-
-One convenient solution is to pile events in a queue instead of dispatching them directly. Then wait for the Response to be sent and dispach every event waiting in the queue.
-
-### Piling events in a queue
-
-Let's create an Event Dispatcher that wait for the Kernel event _terminate_ to dispatch any event:
+You can directly use this class by ommitting the event object parameter:
 
 ```php
-<?php
-
-namespace Acme\EventBundle\Dispatcher;
-
-use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-
-/**
- * Dispatch events on Kernel Terminate
- */
-class DelayedEventDispatcher extends ContainerAwareEventDispatcher implements EventDispatcherInterface, EventSubscriberInterface
-{
-    /**
-     * Queued events
-     *
-     * @var array
-     */
-    private $queue = [];
-
-    /**
-     * Is the dispatcher ready to dispatch events?
-     *
-     * @var boolean
-     */
-    private $ready = false;
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
-    {
-        return [KernelEvents::TERMINATE => 'setReady'];
-    }
-
-    /**
-     * Set ready
-     */
-    public function setReady()
-    {
-        if (!$this->ready) {
-            $this->ready = true;
-
-            foreach ($this->queue as $item) {
-                $this->dispatch($item['name'], $item['event']);
-            }
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatch($eventName, Event $event = null)
-    {
-        if (!$this->ready) {
-            $this->queue[] = ['name' => $name, 'event' => $event];
-
-            return $event;
-        }
-
-        return parent::dispatch($eventName, $event);
-    }
-}
+$dispatcher->dispatch('my_event');
 ```
 
-Declare the delayed event dispatcher as a _service_ and a _subscriber_.
+But you may want to write your own classes to structure your events and give them custom properties and methods. Just have your class exends the default Event class and dispatch an instance of your class:
 
-```yaml
-services:
-    # Delayed Event Dispatcher
-    acme_event_bundle.delayed_dispatcher:
-        class:  "Acme\EventBundle\Dispatcher\DelayedEventDispatcher"
-        parent: "event_dispatcher"
-        tags:
-            - { name: "kernel.event_subscriber" }
+```php
+$dispatcher->dispatch('my_event', new MyDomainEvent());
 ```
 
-Now all you need to do is to dispatch your domain events through this DelayedDispatcher!
+__Good practice:__ Symfony recommands that your [reference all domain event names in a static class](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#the-static-events-class) to avoid typos.
 
-Since this dispatcher only dispatches events in _kernel.terminate_, your listeners and subscribers will run processes after the client is served.
+__ProTip:__ Several events can use the same class, if their behavior is similar. Eg: you can dispatch `order.registered`, `order.shipped`,  `order.arrived` events using the same `OrderStatusChangedEvent` class (maybe instanciated with different values).
 
-## How about Doctrine events?
+### Setup your workflow
 
-Doctrine comes with its own event system, how can we integrate it in this workflow?
-We'll see that in my next post "Symfony event workflow - Part II", stay tuned.
+Now all you need is to connect _actions_ to _consequences_ using [`Listeners`](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#connecting-listeners) (or [`Subscribers`](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#using-event-subscribers)).
+
+## Going further
+
+Once you're confortable with Symfony Event Dispatcher, check out:
+- [Symfony events II - Going async](../events-part-2)
+- [Symfony events III - Doctrine](../events-part-3)
