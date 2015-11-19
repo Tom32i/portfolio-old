@@ -5,17 +5,23 @@ title: "Symfony events III - Doctrine"
 description: "Adding Doctrine events to the equation."
 ---
 
-_Not familar with Symfony Event Dispatcher yet? Start with [Symfony events I - The basics](../events-part-1)_
+_We already talked about [setting up an event workflow](../events-part-1) to organise our code and how [making it asynchronous] (../events-part-2) is a good practice._
+
+While defining your domain events, you may have noticed that events often reflect a change in the data.
+
+The action of an user, creating, updating and deleting content in you app will consist in an event: a new user has registered, an order status has changed, ect.
+
+In the context of Symfony, it's likely that you'll rely on Doctrine Events to watch for these changes.
+
+> How can we combine them with our existing Event workflow?
 
 ## Doctrine events
 
-Changes in the data (create, update, delete) are the main cause of events in your app: a new user, an order status has changed, ect.
+Indeed Doctrine provide a convenient way to watch for events occuring on the data.
 
-When you use Doctrine, you're likely to rely on Doctrine Events to watch these changes.
+I'm talking about the [LifeCycle Events](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#lifecycle-events) and the associated [Listeners and Subscribers](http://symfony.com/doc/current/cookbook/doctrine/event_listeners_subscribers.html).
 
-Indeed Doctrine provide a convenient way to watch for events occuring on the data. I'm talking about the [LifeCycle Events](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#lifecycle-events) and the associated [Listeners and Subscribers](http://symfony.com/doc/current/cookbook/doctrine/event_listeners_subscribers.html).
-
-The classic way to use Doctrine Events is described in the Symfony documentation: listen for Doctrine events and then "do something with the Product", right in the listener.
+The classic way to use Doctrine Events, as described in the Symfony documentation: listen for Doctrine events and then "do something with the entity", right there, in the listener.
 
 There is a few problemes with this approach:
 
@@ -23,16 +29,51 @@ There is a few problemes with this approach:
 2. We rely on two different event systems.
 3. Doctrine events are too tangled with persistence concerns.
 
-For all these reason, I recommand that you only use Doctrine events as a __source of information__ and rely on Symfony Events to code your domain actions and consequences.
+For all these reason, I recommand that you only use Doctrine events as a __source of information__ and rely on Symfony Events to link your domain actions and consequences.
 
 So here's how I suggest to extract information from doctrine events:
 
 ## Create your domain events
 
+### Naming events
+
+Let's define an event for the three basic operation an data:
+
+```php
+<?php
+
+namespace EventBundle;
+
+/**
+ * Model event direcotry
+ */
+class ModelEvents
+{
+    /**
+     * A new model has been created
+     */
+    const CREATED = 'created';
+
+    /**
+     * An existing model has been changed
+     */
+    const UPDATED = 'updated';
+
+    /**
+     * An existing model has been deleted
+     */
+    const DELETED = 'deleted';
+}
+```
+
+### The event class
+
+Now we create a class to embody these three events:
+
 ``` php
 <?php
 
-namespace Acme\EventBundle\Event;
+namespace EventBundle\Event;
 
 use Symfony\Component\EventDispatcher\Event;
 
@@ -49,22 +90,13 @@ class ModelEvent extends Event
     protected $model;
 
     /**
-     * Model identifiers
-     *
-     * @var array
-     */
-    private $identifiers;
-
-    /**
      * Constructor
      *
      * @param mixed $model
-     * @param array $identifiers
      */
-    public function __construct($model, array $identifiers = array())
+    public function __construct($model)
     {
-        $this->model       = $model;
-        $this->identifiers = $identifiers;
+        $this->model = $model;
     }
 
     /**
@@ -73,22 +105,6 @@ class ModelEvent extends Event
     public function getModel()
     {
         return $this->model;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getModelClassName()
-    {
-        return get_class($this->model);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIdentifiers()
-    {
-        return $this->identifiers;
     }
 }
 ```
@@ -100,12 +116,10 @@ To catch Doctrine events, we're gonna create a Subscriber. The role of this subs
 ```php
 <?php
 
-namespace Acme\EventBundle\Subscriber;
+namespace EventBundle\Event\Subscriber;
 
-use Acme\EventBundle\Event\CreatedEvent;
-use Acme\EventBundle\Event\DeletedEvent;
-use Acme\EventBundle\Event\UpdatedEvent;
-use Acme\EventBundle\Events;
+use EventBundle\Event\ModelEvent;
+use EventBundle\ModelEvents;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -116,7 +130,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class DoctrineSubscriber implements EventSubscriber
 {
     /**
-     *  Domain Event Dispatcher
+     *  Event Dispatcher
      *
      * @var EventDispatcherInterface
      */
@@ -151,9 +165,9 @@ class DoctrineSubscriber implements EventSubscriber
      */
     public function postPersist(LifecycleEventArgs $args)
     {
-        $event = new CreatedEvent($args->getEntity());
+        $event = new ModelEvent($args->getEntity());
 
-        $this->dispatcher->dispatch(Events::CREATED, $event);
+        $this->dispatcher->dispatch(ModelEvents::CREATED, $event);
     }
 
     /**
@@ -163,9 +177,9 @@ class DoctrineSubscriber implements EventSubscriber
      */
     public function postUpdate(LifecycleEventArgs $args)
     {
-        $event = new UpdatedEvent($args->getEntity());
+        $event = new ModelEvent($args->getEntity());
 
-        $this->dispatcher->dispatch(Events::UPDATED, $event);
+        $this->dispatcher->dispatch(ModelEvents::UPDATED, $event);
     }
 
     /**
@@ -175,11 +189,24 @@ class DoctrineSubscriber implements EventSubscriber
      */
     public function postRemove(LifecycleEventArgs $args)
     {
-        $event = new DeletedEvent($args->getEntity());
+        $event = new ModelEvent($args->getEntity());
 
-        $this->dispatcher->dispatch(Events::DELETED, $event);
+        $this->dispatcher->dispatch(ModelEvents::DELETED, $event);
     }
 }
+```
+
+Declare the Doctrine subscriber:
+
+```yaml
+services:
+    # Doctrine Event Subscriber
+    doctrine_event_subscriber:
+        class: "EventBundle\Event\Subscriber\DoctrineSubscriber"
+        arguments:
+            - "@delayed_event_dispatcher"
+        tags:
+            - { name: "doctrine.event_subscriber", connection: "default" }
 ```
 
 And voila! We just used Doctrine to produce real Domain events dispatched in Symfony event system.

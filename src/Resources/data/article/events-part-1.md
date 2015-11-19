@@ -5,7 +5,7 @@ title: "Symfony events I - The basics"
 description: "How to write an event workflow with Symfony"
 ---
 
-_Already familiar with Symfony Events? [Skip the basics](#going-further)_
+_Already familiar with the Symfony Event Dispather? [Skip the basics](#going-further)_
 
 It's monday and your client tells you:
 
@@ -23,7 +23,7 @@ This will make an application difficult to maintain and to evolve.
 Events are messages that link actions to consequences in your application while keeping them __independant__.
 
 Dispatching an event is identifying a meaningful domain action.
-The event provides an entry point for every consequence that want to react to this action.
+The event provides an entry point for every consequence that react to this action.
 
 Given a highly coupled code:
 
@@ -38,14 +38,14 @@ Now the two processes are independant and linked by an event.
 ### The benefices of separating concerns
 
 __Team work:__
-The developer working on the Notifier feature won't depend on the team that provide the orders workflow. That can work in parallel, or not, and avoid being slowed down by conflicts.
+The developer working on the Notifier feature won't depend on the team that provide the orders workflow. They can work in parallel, or not, and avoid being slowed down by conflicts.
 
 __Evolutivity:__
 It's very easy to code a new _consequence_ without affecting the _action_.
-You can plug literally any process on your domain event: log, export datas, rebluid a cache, send emails, ...
+By adding a listener, you can plug literally any process on your domain event: logging, exporting datas, building some cache, sending emails, ...
 
 __Flexibilty:__
-Consequences can be activated/desactivated be configuration or context very easily by adding or not a listener.
+Consequences can be activated and desactivated be configuration or context very simply.
 
 ## Getting it done
 
@@ -53,7 +53,7 @@ Fortunately Symfony comes with a nice [Event Dispatcher component](http://symfon
 
 The documentation is thorough and gives complete implementation examples, you should read it.
 
-Once your familiar with the tool,s design your workflow by identifying your domain _actions_ and _consequence_ and naming your domain _events_.
+Once your familiar with the tools, design your workflow by identifying your domain _actions_ and _consequence_ and naming your domain _events_.
 
 Finally, proceed with the implemenation:
 
@@ -69,15 +69,15 @@ You can directly use this class by ommitting the event object parameter:
 $dispatcher->dispatch('my_event');
 ```
 
-But you may want to write your own classes to structure your events and give them custom properties and methods. Just have your class exends the default Event class and dispatch an instance of your class:
+But you may want to write your own classes, to structure your events and give them custom properties and methods. Just have your class exends the default Event class and dispatch an instance of your class:
 
 ```php
 $dispatcher->dispatch('my_event', new MyDomainEvent());
 ```
 
-__Good practice:__ Symfony recommands that your [reference all domain event names in a static class](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#the-static-events-class) to avoid typos.
+__Good practice:__ Symfony recommands that your [reference all domain event names in a static class](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#the-static-events-class). It's will avoid some typos ;)
 
-__ProTip:__ Several events can use the same class, if their behavior is similar. Eg: you can dispatch `order.registered`, `order.shipped`,  `order.arrived` events using the same `OrderStatusChangedEvent` class (maybe instanciated with different values).
+__ProTip:__ Several events can use the same class, if their behavior is similar. Eg: you can dispatch `order.registered`, `order.shipped`,  `order.arrived` events using the same `OrderStatusChangedEvent` class.
 
 ### Setup your workflow
 
@@ -85,6 +85,6 @@ Now all you need is to connect _actions_ to _consequences_ using [`Listeners`](h
 
 ## Going further
 
-Once you're confortable with Symfony Event Dispatcher, check out:
+Once you're confortable with setting up your domain event workflow, check out:
 - [Symfony events II - Going async](../events-part-2)
 - [Symfony events III - Doctrine](../events-part-3)

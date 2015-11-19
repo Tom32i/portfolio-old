@@ -5,19 +5,21 @@ title: "Symfony events II - Going async"
 description: "Let's get asynchronous with the DelayedEventDispatcher!"
 ---
 
-_Not familar with Symfony Event Dispatcher yet? Start with [Symfony events I - The basics](../events-part-1)_
+Although we just set up [a domain event workflow](../events-part-1) with the Symfony Event Dispatcher and kept an healthy separation of concerns, our work is not done yet.
+
+There's still a small problem with our code as it is:
 
 ## Events in Symfony are synchronous
 
 That means when you dispatch an event, the code of the listener is executed right there, not later.
 
-So if an event is fired during the Request process, any listener is also executed during the processing of the request, before any Response can be sent to the client.
+So if an event is fired during the Request process, any listener is also executed during the processing of the Request, before any Response can be sent to the client.
 
 > If you have an event trigering a 1 second process in a 200ms request, your client will wait 1,2 seconds for the response.
 
 Worst, the trigerred process could fail and throw an exception, leaving your client with a 500 error.
 
-In fact, in most case, you don't need the result of the process to send the Response to the client.
+> In fact, in most case, you don't need the result of the process to send the Response to the client.
 
 ## Delay the execution of your processes
 
@@ -32,17 +34,17 @@ Let's create an Event Dispatcher that wait for the Kernel event _terminate_ to d
 ```php
 <?php
 
-namespace Acme\EventBundle\Dispatcher;
+namespace EventBundle\Event\Dispatcher;
 
-use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Dispatch events on Kernel Terminate
  */
-class DelayedEventDispatcher extends ContainerAwareEventDispatcher implements EventDispatcherInterface, EventSubscriberInterface
+class DelayedEventDispatcher extends EventDispatcher implements EventSubscriberInterface
 {
     /**
      * Queued events
@@ -61,9 +63,15 @@ class DelayedEventDispatcher extends ContainerAwareEventDispatcher implements Ev
     /**
      * {@inheritdoc}
      */
-    public static function getSubscribedEvents()
+    public function dispatch($eventName, Event $event = null)
     {
-        return [KernelEvents::TERMINATE => 'setReady'];
+        if (!$this->ready) {
+            $this->queue[] = ['name' => $name, 'event' => $event];
+
+            return $event;
+        }
+
+        return parent::dispatch($eventName, $event);
     }
 
     /**
@@ -83,17 +91,12 @@ class DelayedEventDispatcher extends ContainerAwareEventDispatcher implements Ev
     /**
      * {@inheritdoc}
      */
-    public function dispatch($eventName, Event $event = null)
+    public static function getSubscribedEvents()
     {
-        if (!$this->ready) {
-            $this->queue[] = ['name' => $name, 'event' => $event];
-
-            return $event;
-        }
-
-        return parent::dispatch($eventName, $event);
+        return [KernelEvents::TERMINATE => 'setReady'];
     }
 }
+
 ```
 
 Declare the delayed event dispatcher service:
@@ -101,11 +104,11 @@ Declare the delayed event dispatcher service:
 ```yaml
 services:
     # Delayed Event Dispatcher
-    acme_event_bundle.delayed_dispatcher:
-        class:  "Acme\EventBundle\Dispatcher\DelayedEventDispatcher"
-        parent: "event_dispatcher"
+    delayed_event_dispatcher:
+        class: "EventBundle\Event\Dispatcher\DelayedEventDispatcher"
         tags:
             - { name: "kernel.event_subscriber" }
+
 ```
 
 Now all you need to do is dispatch your domain events through this `DelayedDispatcher`!
