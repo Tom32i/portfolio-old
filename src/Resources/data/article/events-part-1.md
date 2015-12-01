@@ -13,7 +13,7 @@ It's monday and your client tells you:
 
 The most straight forward way to implement that in Symfony is to go in the controller or service that _places the order_ (the action) and write code that _notifies the administrator_ (the consequence).
 
-But structuring an application like that, the code handling orders would be very coupled to the one responsible for notifications.
+By structuring an application like that, the code handling orders would be very coupled to the one responsible for notifications.
 
 Altough this two concerns are _linked_, they should not be _coupled_.
 This will make an application difficult to maintain and to evolve.
@@ -23,7 +23,7 @@ This will make an application difficult to maintain and to evolve.
 Events are messages that link actions to consequences in your application while keeping them __independant__.
 
 Dispatching an event is identifying a meaningful domain action.
-The event provides an entry point for every consequence that react to this action.
+The event provides an entry point for every consequence that reacts to this action.
 
 Given a highly coupled code:
 
@@ -38,11 +38,11 @@ Now the two processes are independant and linked by an event.
 ### The benefices of separating concerns
 
 __Team work:__
-The developer working on the Notifier feature won't depend on the team that provide the orders workflow. They can work in parallel, or not, and avoid being slowed down by conflicts.
+The developer working on the Notifier feature won't depend on the team that provides the orders workflow. They can work in parallel, or not, and avoid being slowed down by conflicts.
 
 __Evolutivity:__
 It's very easy to code a new _consequence_ without affecting the _action_.
-By adding a listener, you can plug literally any process on your domain event: logging, exporting datas, building some cache, sending emails, ...
+By adding a listener, you can plug literally any process on your domain event: logging, exporting datas, building some cache, sending emails...
 
 __Flexibilty:__
 Consequences can be activated and desactivated be configuration or context very simply.
@@ -53,9 +53,9 @@ Fortunately Symfony comes with a nice [Event Dispatcher component](http://symfon
 
 The documentation is thorough and gives complete implementation examples, you should read it.
 
-Once your familiar with the tools, design your workflow by identifying your domain _actions_ and _consequence_ and naming your domain _events_.
+Once you're familiar with the tools, design your workflow by identifying your domain _actions_ and _consequences_ and naming your domain _events_.
 
-Finally, proceed with the implemenation:
+Finally, proceed with the implementation:
 
 ### Create and dispatch domain events
 
@@ -75,7 +75,7 @@ But you may want to write your own classes, to structure your events and give th
 $dispatcher->dispatch('my_event', new MyDomainEvent());
 ```
 
-__Good practice:__ Symfony recommands that your [reference all domain event names in a static class](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#the-static-events-class). It's will avoid some typos ;)
+__Good practice:__ Symfony recommands that your [reference all domain event names in a static class](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#the-static-events-class). It will avoid some typos ;)
 
 __ProTip:__ Several events can use the same class, if their behavior is similar. Eg: you can dispatch `order.registered`, `order.shipped`,  `order.arrived` events using the same `OrderStatusChangedEvent` class.
 
@@ -85,6 +85,6 @@ Now all you need is to connect _actions_ to _consequences_ using [`Listeners`](h
 
 ## Going further
 
-Once you're confortable with setting up your domain event workflow, check out:
+Once you're comfortable with setting up your domain event workflow, check out:
 - [Symfony events II - Going async](../events-part-2)
 - [Symfony events III - Doctrine](../events-part-3)
