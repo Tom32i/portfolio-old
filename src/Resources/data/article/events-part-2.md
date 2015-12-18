@@ -15,21 +15,21 @@ That means when you dispatch an event, the code of the listener is executed righ
 
 So if an event is fired during the Request process, any listener is also executed during the processing of the Request, before any Response can be sent to the client.
 
-> If you have an event trigering a 1 second process in a 200ms request, your client will wait 1,2 seconds for the response.
+> If you have an event triggering a 1 second process in a 200ms request, your client will wait 1,2 seconds for the response.
 
-Worst, the trigerred process could fail and throw an exception, leaving your client with a 500 error.
+Worst, the triggered process could fail and throw an exception, leaving your client with a 500 error.
 
-> In fact, in most case, you don't need the result of the process to send the Response to the client.
+> In fact, in most cases, you don't need the result of the process to send the Response to the client.
 
 ## Delay the execution of your processes
 
 You need the _consequences_ of domain actions to run __after__ the Response has been sent.
 
-One convenient solution is to pile events in a queue instead of dispatching them directly. Then wait for the Response to be sent and dispach every event waiting in the queue.
+One convenient solution is to stack events in a queue instead of dispatching them directly. Then wait for the Response to be sent and dispatch every event waiting in the queue.
 
 ### Piling events in a queue
 
-Let's create an Event Dispatcher that wait for the Kernel event _terminate_ to dispatch any event:
+Let's create an Event Dispatcher that waits for the Kernel event _terminate_ to dispatch any event:
 
 ```php
 <?php

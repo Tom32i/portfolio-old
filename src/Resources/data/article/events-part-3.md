@@ -9,27 +9,27 @@ _We already talked about [setting up an event workflow](../events-part-1) to org
 
 While defining your domain events, you may have noticed that events often reflect a change in the data.
 
-The action of an user, creating, updating and deleting content in you app will consist in an event: a new user has registered, an order status has changed, ect.
+The action of a user, creating, updating and deleting content in your app will consist in an event: a new user has registered, an order status has changed, etc.
 
-In the context of Symfony, it's likely that you'll rely on Doctrine Events to watch for these changes.
+In the context of Symfony, you are likely to rely on Doctrine Events to watch for these changes.
 
 > How can we combine them with our existing Event workflow?
 
 ## Doctrine events
 
-Indeed Doctrine provide a convenient way to watch for events occuring on the data.
+Indeed Doctrine provides a convenient way to watch for events occurring on the data.
 
 I'm talking about the [LifeCycle Events](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#lifecycle-events) and the associated [Listeners and Subscribers](http://symfony.com/doc/current/cookbook/doctrine/event_listeners_subscribers.html).
 
 The classic way to use Doctrine Events, as described in the Symfony documentation: listen for Doctrine events and then "do something with the entity", right there, in the listener.
 
-There is a few problemes with this approach:
+There is a few problems with this approach:
 
 1. Actions and consequences are coupled again.
 2. We rely on two different event systems.
 3. Doctrine events are too tangled with persistence concerns.
 
-For all these reason, I recommand that you only use Doctrine events as a __source of information__ and rely on Symfony Events to link your domain actions and consequences.
+For all these reason, I recommend that you only use Doctrine events as a __source of information__ and rely on Symfony Events to link your domain actions and consequences.
 
 So here's how I suggest to extract information from doctrine events:
 
@@ -37,7 +37,7 @@ So here's how I suggest to extract information from doctrine events:
 
 ### Naming events
 
-Let's define an event for the three basic operation an data:
+Let's define an event for the three basic operation on data:
 
 ```php
 <?php
@@ -45,7 +45,7 @@ Let's define an event for the three basic operation an data:
 namespace EventBundle;
 
 /**
- * Model event direcotry
+ * Model event directory
  */
 class ModelEvents
 {
@@ -109,7 +109,7 @@ class ModelEvent extends Event
 }
 ```
 
-## Agregating Doctrine Events
+## Aggregating Doctrine Events
 
 To catch Doctrine events, we're gonna create a Subscriber. The role of this subscriber is to produce Domain event with data from Doctrine events and feed them to a Symfony dispatcher:
 
@@ -215,8 +215,8 @@ And voila! We just used Doctrine to produce real Domain events dispatched in Sym
 
 The problem:
 
-- The `preUpdate` event gives useful information, the list of changes in the entity, but is fired __before__ database operation. So you can't be sure yet that the persistence went through.
-- The `postUpdate` assures you that persistence is done but don't have the list of changes.
+- The `preUpdate` event provides useful information, the list of changes in the entity, but is fired __before__ database operation. So you can't be sure yet that the persistence went through.
+- The `postUpdate` assures you that persistence is done but does not hold the list of changes.
 
 ``` php
 <?php
@@ -279,7 +279,7 @@ Some time ago, I needed to watch for deleted entities in my app.
 
 I naturally used `postRemove` event, but when I tried to get the identifier of my entity with the `getId` method: the result was `null`.
 
-Indeed Doctrine clear any identifying attribute in your entity after it removed it. It's convenient because you can't re-persist the entity accidentally, but I _needed_ to identify deleted entities in my app!
+Indeed Doctrine cleans any identifying attribute in your entity after it removed it. It's convenient because you can't re-persist the entity accidentally, but I _needed_ to identify deleted entities in my app!
 
 Fortunately, in the `preRemove` event, the identifiers are available.
 
