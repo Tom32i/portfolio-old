@@ -5,7 +5,7 @@ title: "Symfony events III - Doctrine"
 description: "Adding Doctrine events to the equation."
 ---
 
-_We already talked about [setting up an event workflow](../events-part-1) to organise our code and how [making it asynchronous] (../events-part-2) is a good practice._
+_We already talked about [setting up an event workflow](../events-part-1) to organise our code and how [making it asynchronous](../events-part-2) is a good practice._
 
 While defining your domain events, you may have noticed that events often reflect a change in the data.
 
@@ -34,6 +34,12 @@ For all these reason, I recommend that you only use Doctrine events as a __sourc
 So here's how I suggest to extract information from doctrine events:
 
 ## Create your domain events
+
+Let's create 3 generic events that reflects changes on the data:
+
+- Created
+- Updated
+- Deleted
 
 ### Naming events
 
@@ -218,6 +224,8 @@ The problem:
 - The `preUpdate` event provides useful information, the list of changes in the entity, but is fired __before__ database operation. So you can't be sure yet that the persistence went through.
 - The `postUpdate` assures you that persistence is done but does not hold the list of changes.
 
+Let's create a new Event class to carry this new piece of information:
+
 ``` php
 <?php
 
@@ -226,7 +234,7 @@ namespace Acme\EventBundle\Event;
 /**
  * Model event with changes
  */
-class ModelChangeEvent extends ModelEvent
+class ModelChangedEvent extends ModelEvent
 {
     /**
      * Changes made to the model
@@ -273,6 +281,121 @@ class ModelChangeEvent extends ModelEvent
 }
 ```
 
+Now we complete our Doctrine subscriber:
+
+```php
+<?php
+
+// ...
+
+class DoctrineSubscriber implements EventSubscriber
+{
+    // ...
+    /**
+     *  Entities
+     *
+     * @var array
+     */
+    private $entities;
+
+    /**
+     *  Changes
+     *
+     * @var array
+     */
+    private $changes;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSubscribedEvents()
+    {
+        return [
+            // ...
+            'preUpdate',
+        ];
+    }
+
+    /**
+     * Pre update event handler
+     *
+     * @param PreUpdateEventArgs $args
+     */
+    public function preUpdate(PreUpdateEventArgs $args)
+    {
+        $this->setChangeSet($args->getEntity(), $args->getEntityChangeSet());
+    }
+
+    /**
+     * Post update event handler
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function postUpdate(LifecycleEventArgs $args)
+    {
+        $entity = $args->getEntity();
+        $event  = new ModelChangedEvent($entity, $this->getChangeSet($entity));
+
+        $this->dispatcher->dispatch(ModelEvents::UPDATED, $event);
+    }
+
+    /**
+     * Set change set for the given entity
+     *
+     * @param mixed $entity
+     * @param array $changeSet
+     */
+    private function setChangeSet($entity, array $changeSet)
+    {
+        $index = $this->indexEntity($entity);
+        $this->changeSets[$index] = $changeSet;
+    }
+
+    /**
+     * Get change set for the given entity
+     *
+     * @param mixed $entity
+     *
+     * @return array
+     */
+    private function getChangeSet($entity)
+    {
+        if (false !== $index = $this->getEntityIndex($entity)) {
+            return  $this->changeSets[$index];
+        }
+
+        return [];
+    }
+
+    /**
+     * Store an entity in the list and return its index
+     *
+     * @param mixed $entity
+     *
+     * @return integer
+     */
+    private function indexEntity($entity)
+    {
+        if (!in_array($entity, $this->entities)) {
+            $this->entities[] = $entity;
+        }
+
+        return $this->getEntityIndex();
+    }
+
+    /**
+     * Get the index of the given entity in the list
+     *
+     * @param mixed $entity
+     *
+     * @return integer
+     */
+    private function getEntityIndex($entity)
+    {
+        return array_search($entity, $this->entities);
+    }
+```
+
 ### Delete trick
 
 Some time ago, I needed to watch for deleted entities in my app.
@@ -283,6 +406,89 @@ Indeed Doctrine cleans any identifying attribute in your entity after it removed
 
 Fortunately, in the `preRemove` event, the identifiers are available.
 
+```php
+<?php
+
+// ...
+
+class DoctrineSubscriber implements EventSubscriber
+{
+    // ...
+
+    /**
+     * Identifiers
+     *
+     * @var array
+     */
+    private $identifiers;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSubscribedEvents()
+    {
+        return [
+            // ...
+            'preRemove',
+        ];
+    }
+
+    /**
+     * Post remove event handler
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function preRemove(LifecycleEventArgs $args)
+    {
+        $entity        = $args->getEntity();
+        $entityManager = $args->getEntityManager();
+        $classMetadata = $entityManager->getClassMetadata(get_class($entity));
+        $identifiers   = $classMetadata->getIdentifierValues($entity);
+
+        $this->setIdentifiers($entity, $identifiers);
+    }
+
+    /**
+     * Post remove event handler
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function postRemove(LifecycleEventArgs $args)
+    {
+        $entity = $args->getEntity();
+        $event = new ModelDeletedEvent($entity, $this->getIdentifiers($entity));
+
+        $this->dispatcher->dispatch(ModelEvents::DELETED, $event);
+    }
+
+    /**
+     * Set identifiers for the given entity
+     *
+     * @param mixed $entity
+     * @param array $identifiers
+     */
+    private function setIdentifiers($entity, array $identifiers)
+    {
+        $index = $this->indexEntity($entity);
+        $this->identifiers[$index] = $identifiers;
+    }
+
+    /**
+     * Get identifiers for the given entity
+     *
+     * @param mixed $entity
+     *
+     * @return array
+     */
+    private function getIdentifiers($entity)
+    {
+        if (false !== $index = $this->getEntityIndex($entity)) {
+            return  $this->identifiers[$index];
+        }
+
+        return [];
+    }
+```
 
 ### Post flush trick
 

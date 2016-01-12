@@ -69,19 +69,21 @@ You can directly use this class by omitting the event object parameter:
 $dispatcher->dispatch('my_event');
 ```
 
-But you may want to write your own classes, to structure your events and give them custom properties and methods. Just have your class extends the default Event class and dispatch an instance of your class:
+But you may want to write your own classes, to structure your events and give them custom properties and methods. Just have your class extends the default `Symfony\Component\EventDispatcher\Event` class and dispatch an instance of your class:
 
 ```php
 $dispatcher->dispatch('my_event', new MyDomainEvent());
 ```
 
-__Good practice:__ Symfony recommends that your [reference all domain event names in a static class](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#the-static-events-class). It will avoid some typos ;)
+__Good practice:__ Symfony recommends that you [reference all domain events in a static class](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#the-static-events-class). It will avoid some typos ;)
 
 __ProTip:__ Several events can use the same class, if their behavior is similar. Eg: you can dispatch `order.registered`, `order.shipped`,  `order.arrived` events using the same `OrderStatusChangedEvent` class.
 
 ### Setup your workflow
 
 Now all you need is to connect _actions_ to _consequences_ using [`Listeners`](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#connecting-listeners) (or [`Subscribers`](http://symfony.com/doc/current/components/event_dispatcher/introduction.html#using-event-subscribers)).
+
+The cookbook for [subscribers and listeners](http://symfony.com/doc/current/cookbook/event_dispatcher/event_listener.html) will tell you everything you need to know.
 
 ## Going further
 

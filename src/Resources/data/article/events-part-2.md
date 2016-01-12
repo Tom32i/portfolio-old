@@ -19,7 +19,7 @@ So if an event is fired during the Request process, any listener is also execute
 
 Worst, the triggered process could fail and throw an exception, leaving your client with a 500 error.
 
-> In fact, in most cases, you don't need the result of the process to send the Response to the client.
+_In fact, in most cases, you don't need the result of the process to send the Response to the client._
 
 ## Delay the execution of your processes
 
@@ -116,6 +116,86 @@ Now all you need to do is dispatch your domain events through this `DelayedDispa
 Since this dispatcher only fires events in _kernel.terminate_, your listeners and subscribers will run after the client is served.
 
 __Note:__ If any listener triggers an other event during the _kernel.terminate_ phase, the new event will be dispatched instantly because the `DelayedDispatcher` is now in _ready_ state.
+
+## Custom event dispatcher and tags:
+
+In Symfony, you can use tags to [register Kernel listeners and subscribers](http://symfony.com/doc/current/cookbook/event_dispatcher/event_listener.html#creating-an-event-subscriber).
+
+To get you own set of tags for your domain event dispatcher, use the `RegisterListenersPass` and [register a new compiler pass](http://symfony.com/doc/current/cookbook/service_container/compiler_passes.html):
+
+```php
+<?php
+
+namespace EventBundle;
+
+use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\EventDispatcher\DependencyInjection\RegisterListenersPass;
+
+/**
+ * Event bundle
+ */
+class EventBundle extends Bundle
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function build(ContainerBuilder $container)
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new RegisterListenersPass(
+            'delayed_event_dispatcher',
+            'delayed.event_listener',
+            'delayed.event_subscriber'
+        ));
+    }
+}
+
+```
+
+For this to work, you need to make your EventDispatcher a `ContainerAwareEventDispatcher`:
+
+Change its parent class:
+```php
+<?php
+
+namespace EventBundle\Event\Dispatcher;
+
+use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+// ...
+
+/**
+ * Dispatch events on Kernel Terminate
+ */
+class DelayedEventDispatcher extends ContainerAwareEventDispatcher implements EventSubscriberInterface
+{
+// ...
+}
+```
+
+Finnaly, modify its declaration to take the container as a parameter:
+```yaml
+services:
+    # Delayed dispatcher
+    delayed_event_dispatcher:
+        class: EventBundle\Event\Dispatcher\DelayedEventDispatcher
+        arguments:
+            - "@service_container"
+        # ...
+```
+
+This way you can declare listeners and subscribers with just a tag:
+
+```yaml
+services:
+    # Event Logger
+    acme.my_subscriber:
+        class: Acme\Event\Subscriber\MyEventSubscriber
+        tags:
+            - { name: delayed_event_subscriber }
+```
 
 ## How about Doctrine events?
 
