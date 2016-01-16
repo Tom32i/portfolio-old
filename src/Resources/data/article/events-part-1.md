@@ -1,8 +1,8 @@
 ---
-date: "2015-11-12 10:00:00"
-tags: ["Symfony", "Event", "Kernel"]
+date: "2016-01-16 10:00:01"
+tags: ["Symfony", "Event", "Pattern", "Custom"]
 title: "Symfony events I - The basics"
-description: "How to write an event workflow with Symfony"
+description: "How Symfony events can help you build a better workflow for your application"
 ---
 
 _Already familiar with the Symfony Event Dispather? [Skip the basics](#going-further)_
@@ -25,15 +25,18 @@ Events are messages that link actions to consequences in your application while 
 Dispatching an event is identifying a meaningful domain action.
 The event provides an entry point for every consequence that reacts to this action.
 
-Given a highly coupled code:
+Let's take our previous example and add one more feature:
 
+> The app should also generate an invoice PDF file and save it on the server when an order is placed.
+
+Given this highly coupled code:
 ![](/img/article/coupled.svg)
 
-Refactoring the same process with events would look like:
+Refactoring the same feature with events would look like:
 
 ![](/img/article/decoupled.svg)
 
-Now the two processes are independent and linked by an event.
+Now the action and its two consequences are independent, linked by an event.
 
 ### The benefices of separating concerns
 
@@ -88,5 +91,5 @@ The cookbook for [subscribers and listeners](http://symfony.com/doc/current/cook
 ## Going further
 
 Once you're comfortable with setting up your domain event workflow, check out:
-- [Symfony events II - Going async](../events-part-2)
+- [Symfony events II - Delay treatment](../events-part-2)
 - [Symfony events III - Doctrine](../events-part-3)

@@ -1,6 +1,6 @@
 ---
-date: "2015-11-12 10:00:02"
-tags: ["Symfony", "Doctrine", "Event", "Doctrine"]
+date: "2016-01-16 10:00:03"
+tags: ["Symfony", "Doctrine", "Event"]
 title: "Symfony events III - Doctrine"
 description: "Adding Doctrine events to the equation."
 ---
@@ -215,16 +215,15 @@ services:
             - { name: "doctrine.event_subscriber", connection: "default" }
 ```
 
-And voila! We just used Doctrine to produce real Domain events dispatched in Symfony event system.
+And voila! We just used Doctrine to produce simple domain events and dispatch them through the Symfony event system.
 
-### Update trick
+__Note:__ I use the [Delayed Event Dispatcher](../events-part-2) here, because I want all listeners to execute their logic after the client has been served.
 
-The problem:
+### Tracking changes
 
-- The `preUpdate` event provides useful information, the list of changes in the entity, but is fired __before__ database operation. So you can't be sure yet that the persistence went through.
-- The `postUpdate` assures you that persistence is done but does not hold the list of changes.
+When data is updated, it's often relevent to track the list of changed attributes.
 
-Let's create a new Event class to carry this new piece of information:
+Let's create a new event class to carry this new piece of information:
 
 ``` php
 <?php
@@ -247,12 +246,11 @@ class ModelChangedEvent extends ModelEvent
      * Constructor
      *
      * @param mixed $model
-     * @param array $identifiers
      * @param array $changes
      */
-    public function __construct($model, array $identifiers = [], array $changes = [])
+    public function __construct($model, array $changes = [])
     {
-        parent::__construct($model, $identifiers);
+        parent::__construct($model);
 
         $this->changes = $changes;
     }
@@ -281,29 +279,38 @@ class ModelChangedEvent extends ModelEvent
 }
 ```
 
-Now we complete our Doctrine subscriber:
+When retrieving this list of changes from Doctrine, we encounter a small problem:
+
+- The `preUpdate` event provides the list of changes in the entity, but is fired __before__ database operation. So you can't be sure that the persistence went through yet.
+- The `postUpdate` assures you that persistence is done but does not hold the list of changes.
+
+Here's the trick, let's complete our Doctrine subscriber:
 
 ```php
 <?php
 
 // ...
+use Doctrine\ORM\Event\PreUpdateEventArgs;
+use EventBundle\Event\ModelChangedEvent;
+use EventBundle\Utils\Inventory;
 
 class DoctrineSubscriber implements EventSubscriber
 {
     // ...
-    /**
-     *  Entities
-     *
-     * @var array
-     */
-    private $entities;
 
     /**
-     *  Changes
+     *  Inventory
      *
-     * @var array
+     * @var Invetory
      */
-    private $changes;
+    private $inventory;
+
+    //...
+    public function __construct(EventDispatcherInterface $dispatcher)
+    {
+        // ...
+        $this->inventory = new Inventory();
+    }
 
     /**
      * {@inheritdoc}
@@ -317,110 +324,104 @@ class DoctrineSubscriber implements EventSubscriber
     }
 
     /**
-     * Pre update event handler
+     * Store change set for the entity
      *
      * @param PreUpdateEventArgs $args
      */
     public function preUpdate(PreUpdateEventArgs $args)
     {
-        $this->setChangeSet($args->getEntity(), $args->getEntityChangeSet());
+        $this->inventory->setChangeSet($args->getEntity(), $args->getEntityChangeSet());
     }
 
     /**
-     * Post update event handler
+     * Retrieve change set and dispatch an Updated event
      *
      * @param LifecycleEventArgs $args
      */
     public function postUpdate(LifecycleEventArgs $args)
     {
-        $entity = $args->getEntity();
-        $event  = new ModelChangedEvent($entity, $this->getChangeSet($entity));
+        $entity  = $args->getEntity();
+        $changes = $this->inventory->getChangeSet($entity);
+        $event   = new ModelChangedEvent($entity, $changes);
 
         $this->dispatcher->dispatch(ModelEvents::UPDATED, $event);
     }
-
-    /**
-     * Set change set for the given entity
-     *
-     * @param mixed $entity
-     * @param array $changeSet
-     */
-    private function setChangeSet($entity, array $changeSet)
-    {
-        $index = $this->indexEntity($entity);
-        $this->changeSets[$index] = $changeSet;
-    }
-
-    /**
-     * Get change set for the given entity
-     *
-     * @param mixed $entity
-     *
-     * @return array
-     */
-    private function getChangeSet($entity)
-    {
-        if (false !== $index = $this->getEntityIndex($entity)) {
-            return  $this->changeSets[$index];
-        }
-
-        return [];
-    }
-
-    /**
-     * Store an entity in the list and return its index
-     *
-     * @param mixed $entity
-     *
-     * @return integer
-     */
-    private function indexEntity($entity)
-    {
-        if (!in_array($entity, $this->entities)) {
-            $this->entities[] = $entity;
-        }
-
-        return $this->getEntityIndex();
-    }
-
-    /**
-     * Get the index of the given entity in the list
-     *
-     * @param mixed $entity
-     *
-     * @return integer
-     */
-    private function getEntityIndex($entity)
-    {
-        return array_search($entity, $this->entities);
-    }
 ```
 
-### Delete trick
+How do we store and retrieve the ChangeSet you might ask me?
+
+Here's a [simple implementation of the Inventory](https://gist.github.com/Tom32i/54876b5236d477a31126) that provides `setChangeSet` and `getChangeSet` methods.
+
+### Deleted entities
 
 Some time ago, I needed to watch for deleted entities in my app.
 
 I naturally used `postRemove` event, but when I tried to get the identifier of my entity with the `getId` method: the result was `null`.
 
-Indeed Doctrine cleans any identifying attribute in your entity after it removed it. It's convenient because you can't re-persist the entity accidentally, but I _needed_ to identify deleted entities in my app!
+Indeed Doctrine cleans any identifying attribute in your entity after it removed it.
+
+It's convenient because you can't re-persist the entity accidentally, but I _needed_ to identify deleted entities in my app!
 
 Fortunately, in the `preRemove` event, the identifiers are available.
+
+So we can do just what we did with the change set: store the id for the given entity on `preRemove` and retrieve it on `postFlush`.
+
+Let's extends the ModelEvent again to support these identifiers:
+
+```php
+<?php
+
+namespace EventBundle\Event;
+
+/**
+ * Model event with identifiers
+ */
+class ModelDeletedEvent extends ModelEvent
+{
+    /**
+     * Identifiers of the model
+     *
+     * @var array
+     */
+    private $identifiers;
+
+    /**
+     * Constructor
+     *
+     * @param mixed $model
+     * @param array $identifiers
+     */
+    public function __construct($model, array $identifiers = [])
+    {
+        parent::__construct($model);
+
+        $this->identifiers = $identifiers;
+    }
+
+    /**
+     * Get identifiers
+     *
+     * @return array
+     */
+    public function getIdentifiers()
+    {
+        return $this->identifiers;
+    }
+}
+```
+
+Now we complete our listener:
 
 ```php
 <?php
 
 // ...
 
+use EventBundle\Event\ModelDeletedEvent;
+
 class DoctrineSubscriber implements EventSubscriber
 {
     // ...
-
-    /**
-     * Identifiers
-     *
-     * @var array
-     */
-    private $identifiers;
 
     /**
      * {@inheritdoc}
@@ -434,18 +435,17 @@ class DoctrineSubscriber implements EventSubscriber
     }
 
     /**
-     * Post remove event handler
+     * Pre remove event handler
      *
      * @param LifecycleEventArgs $args
      */
     public function preRemove(LifecycleEventArgs $args)
     {
         $entity        = $args->getEntity();
-        $entityManager = $args->getEntityManager();
-        $classMetadata = $entityManager->getClassMetadata(get_class($entity));
+        $classMetadata = $args->getEntityManager()->getClassMetadata(get_class($entity));
         $identifiers   = $classMetadata->getIdentifierValues($entity);
 
-        $this->setIdentifiers($entity, $identifiers);
+        $this->inventory->setIdentifiers($entity, $identifiers);
     }
 
     /**
@@ -455,40 +455,10 @@ class DoctrineSubscriber implements EventSubscriber
      */
     public function postRemove(LifecycleEventArgs $args)
     {
-        $entity = $args->getEntity();
-        $event = new ModelDeletedEvent($entity, $this->getIdentifiers($entity));
+        $entity      = $args->getEntity();
+        $identifiers = $this->inventory->getIdentifiers($entity);
+        $event       = new ModelDeletedEvent($entity, $identifiers);
 
         $this->dispatcher->dispatch(ModelEvents::DELETED, $event);
     }
-
-    /**
-     * Set identifiers for the given entity
-     *
-     * @param mixed $entity
-     * @param array $identifiers
-     */
-    private function setIdentifiers($entity, array $identifiers)
-    {
-        $index = $this->indexEntity($entity);
-        $this->identifiers[$index] = $identifiers;
-    }
-
-    /**
-     * Get identifiers for the given entity
-     *
-     * @param mixed $entity
-     *
-     * @return array
-     */
-    private function getIdentifiers($entity)
-    {
-        if (false !== $index = $this->getEntityIndex($entity)) {
-            return  $this->identifiers[$index];
-        }
-
-        return [];
-    }
 ```
-
-### Post flush trick
-

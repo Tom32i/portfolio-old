@@ -1,8 +1,8 @@
 ---
-date: "2015-11-12 10:00:01"
-tags: ["Symfony", "Event", "Kernel"]
-title: "Symfony events II - Going async"
-description: "Let's get asynchronous with the DelayedEventDispatcher!"
+date: "2016-01-16 10:00:02"
+tags: ["Symfony", "Event", "Kernel", "Terminate"]
+title: "Symfony events II - Delay treatment"
+description: "Improve your app response time by running your listeners on kernel.terminate with the DelayedEventDispatcher."
 ---
 
 Although we just set up [a domain event workflow](../events-part-1) with the Symfony Event Dispatcher and kept an healthy separation of concerns, our work is not done yet.
@@ -29,36 +29,65 @@ One convenient solution is to stack events in a queue instead of dispatching the
 
 ### Piling events in a queue
 
-Let's create an Event Dispatcher that waits for the Kernel event _terminate_ to dispatch any event:
+Let's create an Event Dispatcher that waits for the Kernel event _terminate_ to dispatch any event.
+
+A simple way to do so is to embed the existing Symfony EventDispatcher in our own disptacher:
 
 ```php
 <?php
 
 namespace EventBundle\Event\Dispatcher;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Dispatch events on Kernel Terminate
  */
-class DelayedEventDispatcher extends EventDispatcher implements EventSubscriberInterface
+class DelayedEventDispatcher implements EventDispatcherInterface, EventSubscriberInterface
 {
+    /**
+     *  Event Dispatcher
+     *
+     * @var EventDispatcherInterface
+     */
+    private $dispatcher;
+
     /**
      * Queued events
      *
      * @var array
      */
-    private $queue = [];
+    private $queue;
 
     /**
      * Is the dispatcher ready to dispatch events?
      *
      * @var boolean
      */
-    private $ready = false;
+    private $ready;
+
+    /**
+     * The Deleyad event dispatcher wraps another dispatcher
+     *
+     * @param EventDispatcherInterface $dispatcher
+     */
+    public function __construct(EventDispatcherInterface $dispatcher)
+    {
+        $this->dispatcher = $dispatcher;
+        $this->queue      = [];
+        $this->ready      = false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents()
+    {
+        return [KernelEvents::TERMINATE => 'setReady'];
+    }
 
     /**
      * {@inheritdoc}
@@ -66,12 +95,12 @@ class DelayedEventDispatcher extends EventDispatcher implements EventSubscriberI
     public function dispatch($eventName, Event $event = null)
     {
         if (!$this->ready) {
-            $this->queue[] = ['name' => $name, 'event' => $event];
+            $this->queue[] = ['name' => $eventName, 'instance' => $event];
 
             return $event;
         }
 
-        return parent::dispatch($eventName, $event);
+        return $this->dispatcher->dispatch($eventName, $event);
     }
 
     /**
@@ -82,21 +111,15 @@ class DelayedEventDispatcher extends EventDispatcher implements EventSubscriberI
         if (!$this->ready) {
             $this->ready = true;
 
-            foreach ($this->queue as $item) {
-                $this->dispatch($item['name'], $item['event']);
+            while ($event = array_shift($this->queue)) {
+                $this->dispatcher->dispatch($event['name'], $event['instance']);
             }
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
-    {
-        return [KernelEvents::TERMINATE => 'setReady'];
-    }
+    // Actualy, there's a few more method to implement to respect the EventDispatcherInterface.
+    // But they just forward logic to the embeded dispatcher.
 }
-
 ```
 
 Declare the delayed event dispatcher service:
@@ -106,6 +129,8 @@ services:
     # Delayed Event Dispatcher
     delayed_event_dispatcher:
         class: "EventBundle\Event\Dispatcher\DelayedEventDispatcher"
+        arguments:
+            - @event_dispatcher
         tags:
             - { name: "kernel.event_subscriber" }
 
@@ -116,86 +141,6 @@ Now all you need to do is dispatch your domain events through this `DelayedDispa
 Since this dispatcher only fires events in _kernel.terminate_, your listeners and subscribers will run after the client is served.
 
 __Note:__ If any listener triggers an other event during the _kernel.terminate_ phase, the new event will be dispatched instantly because the `DelayedDispatcher` is now in _ready_ state.
-
-## Custom event dispatcher and tags:
-
-In Symfony, you can use tags to [register Kernel listeners and subscribers](http://symfony.com/doc/current/cookbook/event_dispatcher/event_listener.html#creating-an-event-subscriber).
-
-To get you own set of tags for your domain event dispatcher, use the `RegisterListenersPass` and [register a new compiler pass](http://symfony.com/doc/current/cookbook/service_container/compiler_passes.html):
-
-```php
-<?php
-
-namespace EventBundle;
-
-use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\EventDispatcher\DependencyInjection\RegisterListenersPass;
-
-/**
- * Event bundle
- */
-class EventBundle extends Bundle
-{
-    /**
-     * {@inheritdoc}
-     */
-    public function build(ContainerBuilder $container)
-    {
-        parent::build($container);
-
-        $container->addCompilerPass(new RegisterListenersPass(
-            'delayed_event_dispatcher',
-            'delayed.event_listener',
-            'delayed.event_subscriber'
-        ));
-    }
-}
-
-```
-
-For this to work, you need to make your EventDispatcher a `ContainerAwareEventDispatcher`:
-
-Change its parent class:
-```php
-<?php
-
-namespace EventBundle\Event\Dispatcher;
-
-use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-// ...
-
-/**
- * Dispatch events on Kernel Terminate
- */
-class DelayedEventDispatcher extends ContainerAwareEventDispatcher implements EventSubscriberInterface
-{
-// ...
-}
-```
-
-Finnaly, modify its declaration to take the container as a parameter:
-```yaml
-services:
-    # Delayed dispatcher
-    delayed_event_dispatcher:
-        class: EventBundle\Event\Dispatcher\DelayedEventDispatcher
-        arguments:
-            - "@service_container"
-        # ...
-```
-
-This way you can declare listeners and subscribers with just a tag:
-
-```yaml
-services:
-    # Event Logger
-    acme.my_subscriber:
-        class: Acme\Event\Subscriber\MyEventSubscriber
-        tags:
-            - { name: delayed_event_subscriber }
-```
 
 ## How about Doctrine events?
 
