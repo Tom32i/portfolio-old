@@ -88,8 +88,7 @@ Now all you need is to connect _actions_ to _consequences_ using [`Listeners`](h
 
 The cookbook for [subscribers and listeners](http://symfony.com/doc/current/cookbook/event_dispatcher/event_listener.html) will tell you everything you need to know.
 
-## Going further
+# How about Doctrine events?
 
-Once you're comfortable with setting up your domain event workflow, check out:
-- [Symfony events II - Delay treatment](../events-part-2)
-- [Symfony events III - Doctrine](../events-part-3)
+Doctrine comes with its own event system, how do we deal with these?
+Check out [Symfony events II - Doctrine](../events-part-2).

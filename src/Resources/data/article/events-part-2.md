@@ -1,52 +1,139 @@
 ---
 date: "2016-01-16 10:00:02"
-tags: ["Symfony", "Event", "Kernel", "Terminate"]
-title: "Symfony events II - Delay treatment"
-description: "Improve your app response time by running your listeners on kernel.terminate with the DelayedEventDispatcher."
+tags: ["Symfony", "Doctrine", "Event"]
+title: "Symfony events II - Doctrine"
+description: "Adding Doctrine events to the equation."
 ---
 
-Although we just set up [a domain event workflow](../events-part-1) with the Symfony Event Dispatcher and kept an healthy separation of concerns, our work is not done yet.
+_Not familiar with Symfony Events? Check out [the basics](../events-part-1)._
 
-There's still a small problem with our code as it is:
+While defining your domain events, you may have noticed that events often reflect a change in the data.
 
-## Events in Symfony are synchronous
+The action of a user, creating, updating and deleting content in your app will consist in an event: a new user has registered, an order status has changed, etc.
 
-That means when you dispatch an event, the code of the listener is executed right there, not later.
+In the context of Symfony, you are likely to rely on Doctrine Events to watch for these changes. Doctrine provides a single entry point for watching changes on the model.
 
-So if an event is fired during the Request process, any listener is also executed during the processing of the Request, before any Response can be sent to the client.
+> How can we combine Doctrine with our existing Event workflow?
 
-> If you have an event triggering a 1 second process in a 200ms request, your client will wait 1,2 seconds for the response.
+## Doctrine events
 
-Worst, the triggered process could fail and throw an exception, leaving your client with a 500 error.
+Indeed Doctrine provides a convenient way to watch for events occurring on the data.
 
-_In fact, in most cases, you don't need the result of the process to send the Response to the client._
+I'm talking about the [LifeCycle Events](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#lifecycle-events) and the associated [Listeners and Subscribers](http://symfony.com/doc/current/cookbook/doctrine/event_listeners_subscribers.html).
 
-## Delay the execution of your processes
+The classic way to use Doctrine Events, as described in the Symfony documentation: listen for Doctrine events and then "do something with the entity", right there, in the listener.
 
-You need the _consequences_ of domain actions to run __after__ the Response has been sent.
+There is a few problems with this approach:
 
-One convenient solution is to stack events in a queue instead of dispatching them directly. Then wait for the Response to be sent and dispatch every event waiting in the queue.
+1. Actions and consequences are coupled again.
+2. We rely on two different event systems.
+3. Doctrine events are too tangled with persistence concerns.
 
-### Piling events in a queue
+For all these reason, I recommend that you only use Doctrine events as a __source of information__ and rely on Symfony Events to link your domain actions and consequences.
 
-Let's create an Event Dispatcher that waits for the Kernel event _terminate_ to dispatch any event.
+So here's how I suggest to extract information from doctrine events:
 
-A simple way to do so is to embed the existing Symfony EventDispatcher in our own disptacher:
+## Create your domain events
+
+Let's create 3 generic events that reflects changes on the data:
+
+- Created
+- Updated
+- Deleted
+
+### Naming events
+
+Let's define an event for the three basic operation on data:
 
 ```php
 <?php
 
-namespace EventBundle\Event\Dispatcher;
-
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\KernelEvents;
+namespace EventBundle;
 
 /**
- * Dispatch events on Kernel Terminate
+ * Model event directory
  */
-class DelayedEventDispatcher implements EventDispatcherInterface, EventSubscriberInterface
+class ModelEvents
+{
+    /**
+     * A new model has been created
+     */
+    const CREATED = 'created';
+
+    /**
+     * An existing model has been changed
+     */
+    const UPDATED = 'updated';
+
+    /**
+     * An existing model has been deleted
+     */
+    const DELETED = 'deleted';
+}
+```
+
+### The event class
+
+Now we create a class to embody these three events:
+
+``` php
+<?php
+
+namespace EventBundle\Event;
+
+use Symfony\Component\EventDispatcher\Event;
+
+/**
+ * Model event
+ */
+class ModelEvent extends Event
+{
+    /**
+     * Model
+     *
+     * @var mixed
+     */
+    protected $model;
+
+    /**
+     * Constructor
+     *
+     * @param mixed $model
+     */
+    public function __construct($model)
+    {
+        $this->model = $model;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getModel()
+    {
+        return $this->model;
+    }
+}
+```
+
+## Aggregating Doctrine Events
+
+To catch Doctrine events, we're gonna create a Subscriber. The role of this subscriber is to produce Domain event with data from Doctrine events and feed them to a Symfony dispatcher:
+
+```php
+<?php
+
+namespace EventBundle\Event\Subscriber;
+
+use EventBundle\Event\ModelEvent;
+use EventBundle\ModelEvents;
+use Doctrine\Common\EventSubscriber;
+use Doctrine\ORM\Event\LifecycleEventArgs;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+
+/**
+ * Doctrine subscriber
+ */
+class DoctrineSubscriber implements EventSubscriber
 {
     /**
      *  Event Dispatcher
@@ -56,93 +143,330 @@ class DelayedEventDispatcher implements EventDispatcherInterface, EventSubscribe
     private $dispatcher;
 
     /**
-     * Queued events
-     *
-     * @var array
-     */
-    private $queue;
-
-    /**
-     * Is the dispatcher ready to dispatch events?
-     *
-     * @var boolean
-     */
-    private $ready;
-
-    /**
-     * The Deleyad event dispatcher wraps another dispatcher
+     * Constructor
      *
      * @param EventDispatcherInterface $dispatcher
      */
     public function __construct(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
-        $this->queue      = [];
-        $this->ready      = false;
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function getSubscribedEvents()
+    public function getSubscribedEvents()
     {
-        return [KernelEvents::TERMINATE => 'setReady'];
+        return [
+            'postPersist',
+            'postUpdate',
+            'postRemove',
+        ];
     }
 
     /**
-     * {@inheritdoc}
+     * Post persist event handler
+     *
+     * @param LifecycleEventArgs $args
      */
-    public function dispatch($eventName, Event $event = null)
+    public function postPersist(LifecycleEventArgs $args)
     {
-        if (!$this->ready) {
-            $this->queue[] = ['name' => $eventName, 'instance' => $event];
+        $event = new ModelEvent($args->getEntity());
 
-            return $event;
-        }
-
-        return $this->dispatcher->dispatch($eventName, $event);
+        $this->dispatcher->dispatch(ModelEvents::CREATED, $event);
     }
 
     /**
-     * Set ready
+     * Post update event handler
+     *
+     * @param LifecycleEventArgs $args
      */
-    public function setReady()
+    public function postUpdate(LifecycleEventArgs $args)
     {
-        if (!$this->ready) {
-            $this->ready = true;
+        $event = new ModelEvent($args->getEntity());
 
-            while ($event = array_shift($this->queue)) {
-                $this->dispatcher->dispatch($event['name'], $event['instance']);
-            }
-        }
+        $this->dispatcher->dispatch(ModelEvents::UPDATED, $event);
     }
 
-    // Actualy, there's a few more method to implement to respect the EventDispatcherInterface.
-    // But they just forward logic to the embeded dispatcher.
+    /**
+     * Post remove event handler
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function postRemove(LifecycleEventArgs $args)
+    {
+        $event = new ModelEvent($args->getEntity());
+
+        $this->dispatcher->dispatch(ModelEvents::DELETED, $event);
+    }
 }
 ```
 
-Declare the delayed event dispatcher service:
+Declare the Doctrine subscriber:
 
 ```yaml
 services:
-    # Delayed Event Dispatcher
-    delayed_event_dispatcher:
-        class: "EventBundle\Event\Dispatcher\DelayedEventDispatcher"
+    # Doctrine Event Subscriber
+    doctrine_event_subscriber:
+        class: "EventBundle\Event\Subscriber\DoctrineSubscriber"
         arguments:
-            - @event_dispatcher
+            - "@event_dispatcher"
         tags:
-            - { name: "kernel.event_subscriber" }
-
+            - { name: "doctrine.event_subscriber", connection: "default" }
 ```
 
-Now all you need to do is dispatch your domain events through this `DelayedDispatcher`!
+And voila! We just used Doctrine to produce simple domain events and dispatch them through the Symfony event system.
 
-Since this dispatcher only fires events in _kernel.terminate_, your listeners and subscribers will run after the client is served.
+### Tracking changes
 
-__Note:__ If any listener triggers an other event during the _kernel.terminate_ phase, the new event will be dispatched instantly because the `DelayedDispatcher` is now in _ready_ state.
+When data is updated, it's often relevent to track the list of changed attributes.
 
-## How about Doctrine events?
+Let's create a new event class to carry this new piece of information:
 
-Doctrine comes with its own event system, how do we deal with these?
-Check out [Symfony events III - Doctrine](../events-part-3).
+``` php
+<?php
+
+namespace Acme\EventBundle\Event;
+
+/**
+ * Model event with changes
+ */
+class ModelChangedEvent extends ModelEvent
+{
+    /**
+     * Changes made to the model
+     *
+     * @var array
+     */
+    private $changes;
+
+    /**
+     * Constructor
+     *
+     * @param mixed $model
+     * @param array $changes
+     */
+    public function __construct($model, array $changes = [])
+    {
+        parent::__construct($model);
+
+        $this->changes = $changes;
+    }
+
+    /**
+     * Get changes
+     *
+     * @return array
+     */
+    public function getChanges()
+    {
+        return $this->changes;
+    }
+
+    /**
+     * Has the given field changed?
+     *
+     * @param string $field
+     *
+     * @return boolean
+     */
+    public function hasChanged($field)
+    {
+        return isset($this->changes[$field]);
+    }
+}
+```
+
+When retrieving this list of changes from Doctrine, we encounter a small problem:
+
+- The `preUpdate` event provides the list of changes in the entity, but is fired __before__ database operation. So you can't be sure that the persistence went through yet.
+- The `postUpdate` assures you that persistence is done but does not hold the list of changes.
+
+Here's the trick, let's complete our Doctrine subscriber:
+
+```php
+<?php
+
+// ...
+use Doctrine\ORM\Event\PreUpdateEventArgs;
+use EventBundle\Event\ModelChangedEvent;
+use EventBundle\Utils\Inventory;
+
+class DoctrineSubscriber implements EventSubscriber
+{
+    // ...
+
+    /**
+     *  Inventory
+     *
+     * @var Invetory
+     */
+    private $inventory;
+
+    //...
+    public function __construct(EventDispatcherInterface $dispatcher)
+    {
+        // ...
+        $this->inventory = new Inventory();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSubscribedEvents()
+    {
+        return [
+            // ...
+            'preUpdate',
+        ];
+    }
+
+    /**
+     * Store change set for the entity
+     *
+     * @param PreUpdateEventArgs $args
+     */
+    public function preUpdate(PreUpdateEventArgs $args)
+    {
+        $this->inventory->setChangeSet($args->getEntity(), $args->getEntityChangeSet());
+    }
+
+    /**
+     * Retrieve change set and dispatch an Updated event
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function postUpdate(LifecycleEventArgs $args)
+    {
+        $entity  = $args->getEntity();
+        $changes = $this->inventory->getChangeSet($entity);
+        $event   = new ModelChangedEvent($entity, $changes);
+
+        $this->dispatcher->dispatch(ModelEvents::UPDATED, $event);
+    }
+```
+
+How do we store and retrieve the ChangeSet you might ask me?
+
+Here's a [simple implementation of the Inventory](https://gist.github.com/Tom32i/54876b5236d477a31126) that provides `setChangeSet` and `getChangeSet` methods.
+
+### Deleted entities
+
+Some time ago, I needed to watch for deleted entities in my app.
+
+I naturally used `postRemove` event, but when I tried to get the identifier of my entity with the `getId` method: the result was `null`.
+
+Indeed Doctrine cleans any identifying attribute in your entity after it removed it.
+
+It's convenient because you can't re-persist the entity accidentally, but I _needed_ to identify deleted entities in my app!
+
+Fortunately, in the `preRemove` event, the identifiers are available.
+
+So we can do just what we did with the change set: store the id for the given entity on `preRemove` and retrieve it on `postFlush`.
+
+Let's extends the ModelEvent again to support these identifiers:
+
+```php
+<?php
+
+namespace EventBundle\Event;
+
+/**
+ * Model event with identifiers
+ */
+class ModelDeletedEvent extends ModelEvent
+{
+    /**
+     * Identifiers of the model
+     *
+     * @var array
+     */
+    private $identifiers;
+
+    /**
+     * Constructor
+     *
+     * @param mixed $model
+     * @param array $identifiers
+     */
+    public function __construct($model, array $identifiers = [])
+    {
+        parent::__construct($model);
+
+        $this->identifiers = $identifiers;
+    }
+
+    /**
+     * Get identifiers
+     *
+     * @return array
+     */
+    public function getIdentifiers()
+    {
+        return $this->identifiers;
+    }
+}
+```
+
+Now we complete our listener:
+
+```php
+<?php
+
+// ...
+
+use EventBundle\Event\ModelDeletedEvent;
+
+class DoctrineSubscriber implements EventSubscriber
+{
+    // ...
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSubscribedEvents()
+    {
+        return [
+            // ...
+            'preRemove',
+        ];
+    }
+
+    /**
+     * Pre remove event handler
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function preRemove(LifecycleEventArgs $args)
+    {
+        $entity        = $args->getEntity();
+        $classMetadata = $args->getEntityManager()->getClassMetadata(get_class($entity));
+        $identifiers   = $classMetadata->getIdentifierValues($entity);
+
+        $this->inventory->setIdentifiers($entity, $identifiers);
+    }
+
+    /**
+     * Post remove event handler
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function postRemove(LifecycleEventArgs $args)
+    {
+        $entity      = $args->getEntity();
+        $identifiers = $this->inventory->getIdentifiers($entity);
+        $event       = new ModelDeletedEvent($entity, $identifiers);
+
+        $this->dispatcher->dispatch(ModelEvents::DELETED, $event);
+    }
+```
+
+# Are we there yet?
+
+No quite, but almost...
+
+We have a __decoupled workflow__: domain-related events that links our actions and consequences.
+
+We have __consistancy__: everytime a change occures on the model, regardless of what caused it, the corresponding domain event is fired.
+
+There's still an issue we need to adress: [it's about Response time optimisation](../events-part-3).
