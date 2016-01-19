@@ -1,8 +1,8 @@
 ---
 date: "2016-01-16 10:00:02"
-tags: ["Symfony", "Doctrine", "Event"]
-title: "Symfony events II - Doctrine"
-description: "Adding Doctrine events to the equation."
+tags: ["Symfony", "Doctrine", "Lifecycle", "Event"]
+title: "Doctrine Events as a source of information - Part II"
+description: "Using data from Doctrine Lifecycle events to dispatch custom events in the Symfony event system."
 ---
 
 _Not familiar with Symfony Events? Check out [the basics](../events-part-1)._

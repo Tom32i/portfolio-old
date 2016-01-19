@@ -1,8 +1,8 @@
 ---
 date: "2016-01-16 10:00:01"
-tags: ["Symfony", "Event", "Pattern", "Custom"]
-title: "Symfony events I - The basics"
-description: "How Symfony events can help you build a better workflow for your application"
+tags: ["Symfony", "Event", "Dispatcher", "Pattern", "Custom"]
+title: "Decoupling with Symfony Events - Part I"
+description: "How Symfony events can help you build a better workflow for your application by separating actions and consequences."
 ---
 
 _Already familiar with the Symfony Event Dispather? [Skip the basics](#going-further)_
@@ -90,5 +90,4 @@ The cookbook for [subscribers and listeners](http://symfony.com/doc/current/cook
 
 # How about Doctrine events?
 
-Doctrine comes with its own event system, how do we deal with these?
-Check out [Symfony events II - Doctrine](../events-part-2).
+Doctrine comes with its own event system, [how do we deal with these?](../events-part-2)
