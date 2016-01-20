@@ -87,9 +87,9 @@ class BlogController
                 'name'  => 'Thomas Jarrand',
             ],
             'image' => [
-                'url'    => $app['twig_extension.public']->getPublicUrl('/img/thomas-jarrand-blog.png', true),
-                'width'  => 1200,
-                'height' => 630,
+                'url'    => $app['twig_extension.public']->getPublicUrl('/img/thomas-jarrand-blog.rss.png', true),
+                'width'  => 144,
+                'height' => 144,
             ],
             'items' => array_map([$this, 'getArticleForRSS'], $articles),
         ];
