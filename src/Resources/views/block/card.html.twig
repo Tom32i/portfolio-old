@@ -8,7 +8,7 @@
     <meta name="twitter:site" content="{{ site|default(parameters.meta.twitter) }}" />
     <meta name="twitter:title" content="{{ title }}{#|truncate(70)#}" />
     <meta name="twitter:description" content="{{ description }}" />
-    <meta name="twitter:image" content="{{ url('homepage') ~ 'thomas-jarrand.png' }}" />
+    <meta name="twitter:image" content="{{ image }}" />
 {% endmacro %}
 
 {# title: A clear title without branding or mentioning the domain itself. #}
@@ -16,12 +16,12 @@
 {# url: A URL with no session id or extraneous parameters. All shares on Facebook will use this as the identifying URL for this article. #}
 {# description: A clear description, at least two sentences long. #}
 {# type: The type of object, eg article #}
-{% macro facebook(title, site_name, description, type, url) %}
+{% macro facebook(title, site_name, description, image, type, url) %}
     <meta property="og:title" content="{{ title }}">
     <meta property="og:site_name" content="{{ site_name }}">
     <meta property="og:url" content="{{ url|default(canonical) }}">
     <meta property="og:description" name="description" content="{{ description }}">
-    <meta name="og:image" content="{{ url('homepage') ~ 'thomas-jarrand.png' }}" />
+    <meta name="og:image" content="{{ image }}" />
     {% if type|default(false) %}
         <meta property="og:type" content="{{ type }}" />
     {% endif %}

@@ -14,6 +14,13 @@ use Phpillip\Model\Paginator;
 class BlogController
 {
     /**
+     * Url Generator
+     *
+     * @var Symfony\Component\Routing\Generator\UrlGeneratorInterface
+     */
+    private $urlGenerator;
+
+    /**
      * List
      *
      * @param Request $request
@@ -70,6 +77,8 @@ class BlogController
      */
     public function feed(Request $request, Application $app, array $articles)
     {
+        $this->urlGenerator = $app['url_generator'];
+
         return [
             'title'       => $app['parameters']['meta']['blog']['title'],
             'description' => $app['parameters']['meta']['blog']['description'],
@@ -77,24 +86,36 @@ class BlogController
                 'email' => 'thomas.jarrand@gmail.com',
                 'name'  => 'Thomas Jarrand',
             ],
-            'items'       => array_map(
-                function ($article) use ($app){
-                    $url = $app['url_generator']->generate(
-                        'article',
-                        ['article' => $article['slug']],
-                        UrlGeneratorInterface::ABSOLUTE_URL
-                    );
+            'image' => [
+                'url'    => $app['twig_extension.public']->getPublicUrl('/img/thomas-jarrand-blog.png', true),
+                'width'  => 1200,
+                'height' => 630,
+            ],
+            'items' => array_map([$this, 'getArticleForRSS'], $articles),
+        ];
+    }
 
-                    return [
-                        'title'       => $article['title'],
-                        'description' => $article['description'],
-                        'pubDate'     => $article['date'],
-                        'guid'        => $url,
-                        'link'        => $url
-                    ];
-                },
-                $articles
-            ),
+    /**
+     * Get article to RSS format
+     *
+     * @param array $article
+     *
+     * @return array
+     */
+    private function getArticleForRSS(array $article)
+    {
+        $url = $this->urlGenerator->generate(
+            'article',
+            ['article' => $article['slug']],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        return [
+            'title'       => $article['title'],
+            'description' => $article['description'],
+            'pubDate'     => $article['date'],
+            'guid'        => $url,
+            'link'        => $url
         ];
     }
 }

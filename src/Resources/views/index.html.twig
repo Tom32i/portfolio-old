@@ -4,7 +4,7 @@
 
 {% block meta %}
     {{ parent() }}
-    {{ card.twitter(parameters.meta.title, parameters.meta.description) }}
+    {{ card.twitter(parameters.meta.title, parameters.meta.description, public('img/thomas-jarrand.png', true)) }}
 {% endblock %}
 
 {% block content %}

@@ -16,14 +16,14 @@
 
         {% block stylesheet %}
             <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,700' rel='stylesheet' type='text/css'>
-            <link rel="stylesheet" href="/css/style.css">
-            <link rel="icon" href="/favicon.ico">
-            <link rel="shortcut icon" href="/favicon.ico">
-            <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+            <link rel="stylesheet" href="{{ public('css/style.css') }}">
+            <link rel="icon" href="{{ public('favicon.ico') }}">
+            <link rel="shortcut icon" href="{{ public('favicon.ico') }}">
+            <link rel="apple-touch-icon" href="{{ public('apple-touch-icon.png') }}">
         {% endblock %}
 
         {% block javascript %}
-            <script src="/js/portfolio.js" async></script>
+            <script src="{{ public('js/portfolio.js') }}" async></script>
         {% endblock %}
     </head>
     <body class="{% block body_class '' %}">

@@ -5,11 +5,11 @@
 <div class="project">
     {% if website %}
         <a href="{{ website }}" class="picture" target="_blank">
-            <img src="/img/project/{{ project.slug }}.jpg" alt="{{ project.title }}">
+            <img src="{{ public('img/project/' ~ project.slug ~ '.jpg') }}" alt="{{ project.title }}">
         </a>
     {% else %}
         <div class="picture">
-            <img src="/img/project/{{ project.slug }}.jpg" alt="{{ project.title }}">
+            <img src="{{ public('img/project/' ~ project.slug ~ '.jpg') }}" alt="{{ project.title }}">
         </div>
     {% endif %}
 
