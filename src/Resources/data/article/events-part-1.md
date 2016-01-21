@@ -5,7 +5,7 @@ title: "Decoupling with Symfony Events - Part I"
 description: "How Symfony events can help you build a better workflow for your application by separating actions and consequences."
 ---
 
-_Already familiar with the Symfony Event Dispather? [Skip the basics](#going-further)_
+_Already familiar with the Symfony Event Dispather? [Skip the basics](../events-part-2)_
 
 It's monday and your client tells you:
 
