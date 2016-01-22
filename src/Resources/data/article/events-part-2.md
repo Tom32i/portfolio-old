@@ -23,13 +23,13 @@ I'm talking about the [LifeCycle Events](http://docs.doctrine-project.org/projec
 
 The classic way to use Doctrine Events, as described in the Symfony documentation: listen for Doctrine events and then "do something with the entity", right there, in the listener.
 
-There is a few problems with this approach:
+There are a few problems with this approach:
 
 1. Actions and consequences are coupled again.
 2. We rely on two different event systems.
 3. Doctrine events are too tangled with persistence concerns.
 
-For all these reason, I recommend that you only use Doctrine events as a __source of information__ and rely on Symfony Events to link your domain actions and consequences.
+For all these reasons, I recommend that you only use Doctrine events as a __source of information__ and rely on Symfony Events to link your domain actions and consequences.
 
 So here's how I suggest to extract information from doctrine events:
 
@@ -43,7 +43,7 @@ Let's create 3 generic events that reflects changes on the data:
 
 ### Naming events
 
-Let's define an event for the three basic operation on data:
+Let's define an event for the three basic operations on data:
 
 ```php
 <?php
@@ -117,7 +117,7 @@ class ModelEvent extends Event
 
 ## Aggregating Doctrine Events
 
-To catch Doctrine events, we're gonna create a Subscriber. The role of this subscriber is to produce Domain event with data from Doctrine events and feed them to a Symfony dispatcher:
+To catch Doctrine events, we're gonna create a Subscriber. The role of this subscriber is to produce Domain events with data from Doctrine events and feed them to a Symfony dispatcher:
 
 ```php
 <?php
@@ -465,7 +465,7 @@ class DoctrineSubscriber implements EventSubscriber
 
 No quite, but almost...
 
-We have a __decoupled workflow__: domain-related events that links our actions and consequences.
+We have a __decoupled workflow__: domain-related events that link our actions and consequences.
 
 We have __consistancy__: everytime a change occures on the model, regardless of what caused it, the corresponding domain event is fired.
 
