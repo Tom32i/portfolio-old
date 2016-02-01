@@ -16,7 +16,7 @@ options = {
         '.' => '/srv/app'
     },
     :ansible_playbook => 'ansible/playbook.yml',
-    :ansible_groups   => ['app'],
+    :ansible_groups   => ['env_dev', 'app'],
     :ansible_vars     => {
         '_user' => 'vagrant'
     },
