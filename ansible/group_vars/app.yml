@@ -52,6 +52,13 @@ app_patterns:
   #    state: link_directory
 
   #######
+  # APT #
+  #######
+
+  apt_packages:
+    - python-pygments
+
+  #######
   # Npm #
   #######
 
@@ -63,13 +70,6 @@ app_patterns:
   #    version: 1
   #  - package: webpack
   #    version: 2.1.0-beta.13
-
-  #######
-  # Pip #
-  #######
-
-  pip_packages:
-    - name: Pygments
 
   #######
   # Php #
