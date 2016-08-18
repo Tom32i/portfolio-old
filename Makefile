@@ -21,34 +21,57 @@ help:
 	} \
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)
 
-#########
-# Setup #
-#########
+###############
+# Environment #
+###############
 
-## Setup environment & Install application
-setup: provision
-	vagrant ssh -c 'cd /srv/app && make install'
-
-#############
-# Provision #
-#############
-
-## Provision environment
-provision: provision-vagrant
-
-provision-vagrant:
-	ansible-galaxy install -r ansible/roles.yml -p ansible/roles -f
+## Setup environment & Install & Build application
+setup:
 	vagrant up --no-provision
 	vagrant provision
+	vagrant ssh -- "cd /srv/app && make install build@prod"
+
+## Update environment
+update: export ANSIBLE_TAGS = manala.update
+update:
+	vagrant provision
+
+## Update ansible
+update-ansible: export ANSIBLE_TAGS = manala.update
+update-ansible:
+	vagrant provision --provision-with ansible
+
+## Provision environment
+provision: export ANSIBLE_EXTRA_VARS = {"manala":{"update":false}}
+provision:
+	vagrant provision --provision-with app
+
+## Provision nginx
+provision-nginx: export ANSIBLE_TAGS = manala_nginx
+provision-nginx: provision
+
+## Provision php
+provision-php: export ANSIBLE_TAGS = manala_php
+provision-php: provision
 
 ###########
 # Install #
 ###########
 
-install: install-app build
+## Install application
+install:
+	# Composer
+	composer install --no-progress --no-interaction
+	# Npm
+	npm install --no-spin
 
-install-app:
-	composer --no-progress --no-interaction install
+install@prod: SYMFONY_ENV = prod
+install@prod:
+	# Composer
+	composer install --prefer-dist --optimize-autoloader --no-progress --no-interaction
+	# Symfony cache
+	bin/console cache:warmup --no-debug
+	# Npm
 	npm install --no-spin
 
 #########
@@ -61,7 +84,7 @@ build: build-assets
 build-assets:
 	gulp dev
 
-## Build application production
+build@prod: SYMFONY_ENV = prod
 build@prod: build-assets@prod
 
 build-assets@prod:
@@ -87,15 +110,39 @@ run: run-server
 run-server:
 	bin/console phpillip:serve
 
-###########
-# Publish #
-###########
+########
+# Lint #
+########
+
+## Run lint tools
+lint:
+	php-cs-fixer fix --config-file=.php_cs --dry-run --diff
+
+lint@test: SYMFONY_ENV = test
+lint@test: lint
+
+##########
+# Deploy #
+##########
 
 ## Publish
 publish:
 	vagrant ssh -c 'cd /srv/app && make build@prod'
 	chmod -R 755 dist
 	rsync -arzv --delete dist/* dédié:/home/tom32i/sites/portfolio
+
+publish@test:
+	vagrant ssh -c 'cd /srv/app && make build@prod'
+	chmod -R 755 dist
+	rsync -arzv --delete dist/* deployer.dev:/home/tom32i/portfolio
+
+## Deploy application (demo)
+deploy@demo:
+	ansible-playbook ansible/deploy.yml --inventory-file=ansible/hosts --limit=deploy_demo
+
+## Deploy application (prod)
+deploy@prod:
+	ansible-playbook ansible/deploy.yml --inventory-file=ansible/hosts --limit=deploy_prod
 
 ##########
 # Custom #

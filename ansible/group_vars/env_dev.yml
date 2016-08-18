@@ -1,9 +1,0 @@
----
-
-_env: dev
-
-#########
-# Nginx #
-#########
-
-_env_nginx_configs: []
