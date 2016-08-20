@@ -61,7 +61,7 @@ provision-php: provision
 ## Install application
 install:
 	# Composer
-	composer install --no-progress --no-interaction
+	composer install --prefer-dist --optimize-autoloader --no-progress --no-interaction
 	# Npm
 	npm install --no-spin
 
@@ -69,8 +69,6 @@ install@prod: SYMFONY_ENV = prod
 install@prod:
 	# Composer
 	composer install --prefer-dist --optimize-autoloader --no-progress --no-interaction
-	# Symfony cache
-	bin/console cache:warmup --no-debug
 	# Npm
 	npm install --no-spin
 
@@ -126,23 +124,16 @@ lint@test: lint
 ##########
 
 ## Publish
-publish:
-	vagrant ssh -c 'cd /srv/app && make build@prod'
-	chmod -R 755 dist
-	rsync -arzv --delete dist/* dédié:/home/tom32i/sites/portfolio
-
-publish@test:
-	vagrant ssh -c 'cd /srv/app && make build@prod'
-	chmod -R 755 dist
-	rsync -arzv --delete dist/* deployer.dev:/home/tom32i/portfolio
-
-## Deploy application (demo)
 deploy@demo:
-	ansible-playbook ansible/deploy.yml --inventory-file=ansible/hosts --limit=deploy_demo
+	vagrant ssh -c 'cd /srv/app && make build@prod'
+	chmod -R 755 dist
+	rsync -arzv --delete dist/* tom32i@deployer.dev:/home/tom32i/portfolio
 
-## Deploy application (prod)
+## Publish
 deploy@prod:
-	ansible-playbook ansible/deploy.yml --inventory-file=ansible/hosts --limit=deploy_prod
+	vagrant ssh -c 'cd /srv/app && make build@prod'
+	chmod -R 755 dist
+	rsync -arzv --delete dist/* tom32i@tom32i.fr:/home/tom32i/portfolio
 
 ##########
 # Custom #
