@@ -8,6 +8,11 @@
     "email": "thomas.jarrand@gmail.com",
     "url": "http://thomas.jarrand.fr"
   },
+  "scripts": {
+    "build": "gulp",
+    "build-dev": "gulp dev"
+    "watch": "gulp watch"
+  },
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-autoprefixer": "^2.3.1",
