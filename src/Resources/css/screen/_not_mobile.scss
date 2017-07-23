@@ -42,12 +42,12 @@
 
 .blog .site-footer {
     .about {
-        @extend .column;
+        @include column;
         width: percentage(1/3);
     }
 
     .articles {
-        @extend .column;
+        @include column;
         width: percentage(2/3);
     }
 }

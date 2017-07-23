@@ -41,7 +41,7 @@ Loader.prototype.getScript = function()
 {
     var script = document.createElement('script');
 
-    script.src   = 'http://lab.tom32i.fr/console/terminal.min.js';
+    script.src   = '//lab.tom32i.fr/console/terminal.min.js';
     script.async = true;
 
     return script;

@@ -1,5 +1,5 @@
 .SILENT:
-.PHONY: help
+.PHONY: build test
 
 ## Colors
 COLOR_RESET   = \033[0m
@@ -21,33 +21,44 @@ help:
 	} \
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)
 
-#########
-# Setup #
-#########
+###############
+# Environment #
+###############
 
-## Setup environment & Install application
-setup: provision
-	vagrant ssh -c 'cd /srv/app && make install'
-
-#############
-# Provision #
-#############
-
-## Provision environment
-provision: provision-vagrant
-
-provision-vagrant:
-	ansible-galaxy install -r ansible/roles.yml -p ansible/roles -f
+## Setup environment
+setup:
 	vagrant up --no-provision
 	vagrant provision
+	vagrant ssh -c 'cd /srv/app && make install && make build@prod'
 
-###########
-# Install #
-###########
+## Update environment
+update: export ANSIBLE_TAGS = manala.update
+update:
+	vagrant provision
 
-install: install-app build
+## Update ansible
+update-ansible: export ANSIBLE_TAGS = manala.update
+update-ansible:
+	vagrant provision --provision-with ansible
 
-install-app:
+## Provision environment
+provision: export ANSIBLE_EXTRA_VARS = {"manala":{"update":false}}
+provision:
+	vagrant provision --provision-with app
+
+## Provision nginx
+provision-nginx: export ANSIBLE_TAGS = manala_nginx
+provision-nginx: provision
+
+## Provision php
+provision-php: export ANSIBLE_TAGS = manala_php
+provision-php: provision
+
+##########
+# Deploy #
+##########
+
+install:
 	composer --no-progress --no-interaction install
 	npm install --no-spin
 
@@ -95,7 +106,12 @@ run-server:
 publish:
 	vagrant ssh -c 'cd /srv/app && make build@prod'
 	chmod -R 755 dist
-	rsync -arzv --delete dist/* dédié:/home/tom32i/sites/portfolio
+	rsync -arzv --delete dist/* dédié:/home/tom32i/portfolio
+
+publish@demo:
+	vagrant ssh -c 'cd /srv/app && make build@prod'
+	chmod -R 755 dist
+	rsync -arzv --delete dist/* deployer.dev:/home/tom32i/portfolio
 
 ##########
 # Custom #
@@ -108,3 +124,14 @@ supervisor-start:
 ## Launch dev server
 supervisor-stop:
 	sudo supervisorctl stop all
+
+##########
+# Deploy #
+##########
+
+## Deploy application
+deploy@demo:
+	ansible-playbook ansible/deploy.yml --inventory-file=ansible/hosts --limit=deploy_demo
+
+deploy@prod:
+	ansible-playbook ansible/deploy.yml --inventory-file=ansible/hosts --limit=deploy_prod
