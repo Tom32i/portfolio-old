@@ -111,7 +111,7 @@ publish:
 publish@demo:
 	vagrant ssh -c 'cd /srv/app && make build@prod'
 	chmod -R 755 dist
-	rsync -arzv --delete dist/* deployer.dev:/home/tom32i/portfolio
+	rsync -arzv --delete dist/* deployer.vm:/home/tom32i/portfolio
 
 ##########
 # Custom #
