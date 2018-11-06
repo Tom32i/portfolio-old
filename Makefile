@@ -72,7 +72,7 @@ build: build-assets
 build-assets:
 	gulp dev
 
-## Build application production
+## Build application prod
 build@prod: build-assets@prod
 
 build-assets@prod:
@@ -102,13 +102,12 @@ run-server:
 # Publish #
 ###########
 
-## Publish
-publish:
+deploy@prod:
 	vagrant ssh -c 'cd /srv/app && make build@prod'
 	chmod -R 755 dist
 	rsync -arzv --delete dist/* dédié:/home/tom32i/portfolio
 
-publish@demo:
+deploy@demo:
 	vagrant ssh -c 'cd /srv/app && make build@prod'
 	chmod -R 755 dist
 	rsync -arzv --delete dist/* deployer.vm:/home/tom32i/portfolio
@@ -124,14 +123,3 @@ supervisor-start:
 ## Launch dev server
 supervisor-stop:
 	sudo supervisorctl stop all
-
-##########
-# Deploy #
-##########
-
-## Deploy application
-deploy@demo:
-	ansible-playbook ansible/deploy.yml --inventory-file=ansible/hosts --limit=deploy_demo
-
-deploy@prod:
-	ansible-playbook ansible/deploy.yml --inventory-file=ansible/hosts --limit=deploy_prod
